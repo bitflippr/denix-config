@@ -20,6 +20,8 @@ delib.module {
               "voice.skulldogged.dev" = "192.168.1.82";
             };
           };
+          # Tailnet names come from Tailscale's resolver; the upstreams don't know them.
+          conditional.mapping."skate-altair.ts.net" = "100.100.100.100";
           upstreams.groups.default = [
             "194.242.2.2"
             "2a07:e340::2"
