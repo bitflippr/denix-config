@@ -5,6 +5,7 @@
 }: let
   overlay = _: prev: {
     local = {
+      wrapper-v2 = prev.callPackage ../../pkgs/wrapper-v2/package.nix {};
       cobalt = prev.callPackage ../../pkgs/cobalt/package.nix {};
       jellyfin = prev.callPackage ../../pkgs/jellyfin/package.nix {
         inherit inputs;

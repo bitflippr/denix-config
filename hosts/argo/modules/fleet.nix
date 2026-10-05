@@ -7,6 +7,7 @@ delib.module {
   nixos.ifEnabled.programs.fleet = {
     enable = true;
     desktops.enable = true;
+    containers.enable = true;
     isolation = {
       enable = true;
       # Stalwart's admin and root account passwords; agents use the API key.
