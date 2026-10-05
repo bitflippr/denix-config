@@ -55,7 +55,7 @@ delib.module {
     rip = pkgs.writeShellScriptBin "rip" ''
       : "''${RIP_GRAVEYARD:=$HOME/.local/share/graveyard}"
       export RIP_GRAVEYARD
-      exec ${lib.getExe pkgs.rip2} "$@"
+      exec ${lib.getExe pkgs.local.rip2} "$@"
     '';
 
     basePackages =

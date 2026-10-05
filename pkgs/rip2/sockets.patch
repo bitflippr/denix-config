@@ -1,0 +1,29 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index af7126f..e980f67 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -20,6 +20,8 @@ use nix::libc;
+ use nix::sys::stat::Mode;
+ #[cfg(unix)]
+ use nix::unistd::mkfifo;
++#[cfg(any(target_os = "linux", target_os = "android"))]
++use nix::sys::stat::{mknod, SFlag};
+ #[cfg(unix)]
+ use std::os::unix::fs::{symlink, symlink as symlink_dir, FileTypeExt, PermissionsExt};
+ 
+@@ -608,6 +610,15 @@ pub fn copy_file(
+         return Ok(true);
+     }
+ 
++    // A socket holds no data, so an unbound socket node with the same mode
++    // stands in for it. Linux lets unprivileged users create one.
++    #[cfg(any(target_os = "linux", target_os = "android"))]
++    if filetype.is_socket() {
++        let perm: libc::mode_t = (metadata.permissions().mode() & 0o777) as libc::mode_t;
++        mknod(dest, SFlag::S_IFSOCK, Mode::from_bits_truncate(perm), 0)?;
++        return Ok(true);
++    }
++
+     if filetype.is_symlink() {
+         let target = fs::read_link(source)?;
+         if is_dir_link(&metadata) {
