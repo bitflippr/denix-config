@@ -36,10 +36,21 @@ delib.module {
           env = "STALWART_TOKEN";
           description = "Stalwart admin API key; set STALWART_URL=https://mail.skulldogged.dev for stalwart-cli";
         };
+        mail = {
+          file = "/home/marshall/.config/stalwart/agent-mail-password";
+          env = "STALWART_MAIL_PASSWORD";
+          description = "App password for root@skulldogged.dev; use `fleet mail` rather than this";
+        };
       };
       broker = {
         enable = true;
         users = ["marshall"];
+        # Mars's mailbox, for `fleet mail`.
+        mail = {
+          url = "https://mail.skulldogged.dev";
+          user = "root@skulldogged.dev";
+          secret = "mail";
+        };
       };
 
       host = {
