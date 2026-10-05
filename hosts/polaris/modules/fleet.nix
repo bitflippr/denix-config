@@ -12,6 +12,7 @@ delib.module {
     broker = {
       enable = true;
       users = ["marshall"];
+      t3Authorities.argo = "https://builder.skate-altair.ts.net:8443/mcp";
     };
 
     host = {
