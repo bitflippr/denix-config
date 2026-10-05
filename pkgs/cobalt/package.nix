@@ -58,6 +58,8 @@ in
       runHook preBuild
       (
         cd node_modules/.pnpm/isolated-vm@6.0.2/node_modules/isolated-vm
+        # GCC 16 no longer provides uint32_t to timer.h transitively.
+        sed -i '1i #include <cstdint>' src/lib/timer.h
         node-gyp rebuild --release -j "$NIX_BUILD_CORES"
       )
       (

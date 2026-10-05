@@ -4,10 +4,13 @@
 #
 # slskd reads stdout at debug level and logs any stderr as a warning, so
 # stderr is reserved for files that were left behind.
+import errno
 import json
 import os
 import re
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import mutagen
@@ -55,9 +58,33 @@ def move(source, target):
     # link+unlink never replaces a file already in the library.
     try:
         os.link(source, target)
+    except OSError as error:
+        # slskd's sandbox mounts the downloads and the library separately,
+        # and link() can't cross mounts even on the same filesystem.
+        if error.errno != errno.EXDEV or not copy_in(source, target):
+            return False
+    os.unlink(source)
+    return True
+
+
+def copy_in(source, target):
+    # Copy beside the target, then link it into place so the library never
+    # holds a partial file and an existing file still wins.
+    try:
+        fd, partial = tempfile.mkstemp(
+            dir=target.parent, prefix=".", suffix=".partial",
+        )
     except OSError:
         return False
-    os.unlink(source)
+    os.close(fd)
+    try:
+        shutil.copyfile(source, partial)
+        os.chmod(partial, 0o664)
+        os.link(partial, target)
+    except OSError:
+        return False
+    finally:
+        os.unlink(partial)
     return True
 
 

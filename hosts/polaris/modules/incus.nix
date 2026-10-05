@@ -106,20 +106,14 @@ in
         enable = true;
 
         # Follow Incus's current monthly feature release rather than its LTS
-        # channel. This is presently Incus 7.3 in the pinned nixpkgs input.
-        # Incus 7.3's fast-reboot check compares /proc/<qemu-pid>/exe with the
+        # channel. This is presently Incus 7.5 in the pinned nixpkgs input.
+        # Its fast-reboot check compares /proc/<qemu-pid>/exe with the
         # QEMU launcher found in PATH. Nix's launcher execs a hidden wrapped
         # binary, so the paths always differ and Incus needlessly tears QEMU
         # down on every guest reboot. With a passed-through IGD, the immediate
         # reopen then races the VFIO reset and leaves the VM stopped.
         package = pkgs.incus.overrideAttrs (old: {
-          # Upstream fix for rsync 3.5 destination traversal (Incus #3968).
-          patches =
-            (old.patches or [])
-            ++ [
-              ./incus-qemu-wrapper-fast-reboot.patch
-              ./incus-rsync-3.5-apparmor.patch
-            ];
+          patches = (old.patches or []) ++ [./incus-qemu-wrapper-fast-reboot.patch];
         });
 
         ui.enable = true;

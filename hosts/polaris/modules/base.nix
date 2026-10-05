@@ -95,6 +95,21 @@ delib.module {
       Environment=ANDROID_SDK_ROOT=${androidHome}
     '';
 
+    # ET 7.0.0 builds as C++17, but current abseil requires C++20. Upstream
+    # master has already moved to C++20.
+    nixpkgs.overlays = [
+      (_: prev: {
+        eternal-terminal = prev.eternal-terminal.overrideAttrs (old: {
+          postPatch =
+            (old.postPatch or "")
+            + ''
+              substituteInPlace CMakeLists.txt \
+                --replace-fail "set(CMAKE_CXX_STANDARD 17)" "set(CMAKE_CXX_STANDARD 20)"
+            '';
+        });
+      })
+    ];
+
     services = {
       desktopManager.plasma6.enable = true;
       displayManager.sddm.enable = true;
