@@ -23,7 +23,7 @@ delib.module {
         "The homelab serves Mars and their household. Don't stop, restart or reconfigure a service or VM unless the task is about it."
         "/ has little free space. Put builds, caches, downloads and job output on /mnt; /mnt/scratch is for agent work."
         "This is NixOS: get tools with `nix shell nixpkgs#<pkg>`. Polaris's config is denix-config hosts/polaris. Make changes in argo's checkout (~/Projects/denix-config on argo) and push; ~/nix-config here pulls them."
-        "To switch Polaris, pull ~/nix-config (`git -C ~/nix-config pull --ff-only`) and run `fleet switch --reason WHY` in it: it builds as you and asks Mars to activate the build. Never run nixos-rebuild over SSH; a tailscaled restart kills the session mid-switch."
+        "To switch Polaris, run `fleet switch --on polaris --reason WHY` from argo, or here pull ~/nix-config (`git -C ~/nix-config pull --ff-only`) and run `fleet switch --reason WHY` in it: either builds as you and asks Mars to activate the build. Never run nixos-rebuild over SSH; a tailscaled restart kills the session mid-switch."
         "Use `fleet job run` for anything that may outlive a tool call. Remove files with `rip`, not rm."
         "Agents run in fleet's sandbox. Use fleet container for project containers and fleet vm start/exec win11 for guest work; host Incus configuration needs fleet elevate approval."
         "There's no python3 here; use node to parse JSON. Over SSH the login shell is fish, so wrap bash syntax in `bash -c`."
