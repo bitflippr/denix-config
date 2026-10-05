@@ -3,14 +3,30 @@
   lib,
   ...
 }: let
-  # Two 1 TB Samsung NVMe drives. Everything that can't be regenerated lives on
-  # the mirror; caches, build outputs and scratch space live on the stripe.
+  # Two 1 TB Samsung NVMe drives. The system and the server's own state live on
+  # a small btrfs mirror; home, agents' work, caches and builds get the rest of
+  # both drives as a btrfs stripe, which the nightly backup covers.
   disks = {
     a = "/dev/disk/by-id/nvme-SAMSUNG_MZVL21T0HCLR-00B00_S676NF0X110569";
     b = "/dev/disk/by-id/nvme-SAMSUNG_MZVL21T0HCLR-00B00_S676NF0WC12967";
   };
 
-  disk = esp: device: {
+  mountOptions = [
+    "compress=zstd:1"
+    "noatime"
+  ];
+
+  # One filesystem across both drives' partitions of this name, with its
+  # metadata mirrored either way.
+  btrfs = name: data: subvolumes: {
+    type = "btrfs";
+    extraArgs = ["-L" name "-d" data "-m" "raid1" "/dev/disk/by-partlabel/disk-a-${name}"];
+    subvolumes = lib.mapAttrs (_: mountpoint: {inherit mountpoint mountOptions;}) subvolumes;
+  };
+
+  # Disko formats drives in name order and btrfs needs both halves present, so
+  # drive a's halves stay bare and drive b creates each filesystem.
+  disk = esp: device: filesystems: {
     type = "disk";
     inherit device;
     content = {
@@ -28,19 +44,13 @@
         };
 
         system = {
-          size = "500G";
-          content = {
-            type = "mdraid";
-            name = "system";
-          };
+          size = "150G";
+          content = filesystems.system or null;
         };
 
-        scratch = {
+        work = {
           size = "100%";
-          content = {
-            type = "mdraid";
-            name = "scratch";
-          };
+          content = filesystems.work or null;
         };
       };
     };
@@ -50,43 +60,37 @@ in
     name = "argo";
 
     nixos.ifEnabled = {
-      disko.devices = {
-        disk = {
-          a = disk "/boot" disks.a;
-          b = disk "/boot-fallback" disks.b;
-        };
-
-        mdadm = {
-          system = {
-            type = "mdadm";
-            level = 1;
-            content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/";
-              mountOptions = ["noatime"];
-            };
+      disko.devices.disk = {
+        a = disk "/boot" disks.a {};
+        b = disk "/boot-fallback" disks.b {
+          system = btrfs "system" "raid1" {
+            "/root" = "/";
+            "/nix" = "/nix";
+            "/log" = "/var/log";
           };
 
-          scratch = {
-            type = "mdadm";
-            level = 0;
-            content = {
-              type = "filesystem";
-              format = "xfs";
-              mountpoint = "/scratch";
-              mountOptions = ["noatime"];
-            };
+          work = btrfs "work" "raid0" {
+            "/home" = "/home";
+            "/scratch" = "/scratch";
           };
         };
       };
 
-      boot = {
-        swraid = {
-          enable = true;
-          mdadmConf = "MAILADDR root";
-        };
+      # Mount by label, which both halves carry, so the mirror can still be
+      # mounted degraded (rootflags=degraded) from whichever drive survives.
+      fileSystems = lib.mapAttrs (_: label: {device = lib.mkForce "/dev/disk/by-label/${label}";}) {
+        "/" = "system";
+        "/nix" = "system";
+        "/var/log" = "system";
+        "/home" = "work";
+        "/scratch" = "work";
+      };
 
+      # Checksums only help if something reads the data: monthly scrubs find bad
+      # blocks early and repair the mirror's from the other drive.
+      services.btrfs.autoScrub.enable = true;
+
+      boot = {
         initrd.availableKernelModules = [
           "ahci"
           "nvme"
