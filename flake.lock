@@ -613,6 +613,26 @@
         "type": "github"
       }
     },
+    "fleetd": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791195480,
+        "narHash": "sha256-qXyKpAjnDOyKVQaJFoM8tFX7kVpmSSq1OSWZcAfNsgY=",
+        "ref": "refs/heads/main",
+        "rev": "f7964bb8bfb53a509836ca9eff5adc9e1b0cce2d",
+        "revCount": 1,
+        "type": "git",
+        "url": "https://github.com/skulldogged/fleetd"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/skulldogged/fleetd"
+      }
+    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -1563,6 +1583,7 @@
         "draconisplusplus-plugin-lab": "draconisplusplus-plugin-lab",
         "draconisplusplus-plugins": "draconisplusplus-plugins",
         "fish-git-abbr": "fish-git-abbr",
+        "fleetd": "fleetd",
         "home-manager": "home-manager",
         "hyprglass": "hyprglass",
         "hyprland": "hyprland",

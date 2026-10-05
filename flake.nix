@@ -74,6 +74,12 @@
       };
     };
 
+    # Private; fetched over HTTPS with the user's git credentials.
+    fleetd = {
+      url = "git+https://github.com/skulldogged/fleetd";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     fish-git-abbr = {
       url = "github:pupbrained/fish-git-abbr/patch-1";
       flake = false;

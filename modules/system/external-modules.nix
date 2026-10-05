@@ -9,6 +9,7 @@ delib.module {
   nixos.always.imports = [
     inputs.cua.nixosModules.cua-driver
     inputs.disko.nixosModules.disko
+    inputs.fleetd.nixosModules.default
     inputs.sops-nix.nixosModules.sops
     inputs.impermanence.nixosModules.impermanence
     inputs.lanzaboote.nixosModules.lanzaboote
