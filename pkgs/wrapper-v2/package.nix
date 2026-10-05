@@ -75,6 +75,9 @@ in
     version = "0.1.0";
     dontUnpack = true;
     dontBuild = true;
+    # The Android worker must retain its linker layout and /system/lib64 path.
+    dontPatchELF = true;
+    dontStrip = true;
     doCheck = false;
     installPhase = ''
       mkdir -p "$out/bin" "$out/system/bin"
