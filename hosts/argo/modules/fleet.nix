@@ -31,6 +31,10 @@ delib.module {
         projects = "/home/marshall/Projects";
         config = "/home/marshall/Projects/denix-config";
         fleet-notes = "/home/marshall/Projects/agent-fleet";
+        # Agents' commits are signed with this key (registered on GitHub as
+        # "argo agents"), so they're told apart from Mars's own.
+        agent-signing-key = "/home/marshall/.ssh/id_ed25519_agent_signing";
+        agent-allowed-signers = "/home/marshall/.ssh/allowed_signers_agents";
       };
 
       mounts = {
