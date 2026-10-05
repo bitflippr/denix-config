@@ -50,6 +50,14 @@ delib.module {
         navis = "the laptop's NixOS install; online only when booted";
       };
 
+      devices.pixel = {
+        serial = "57150DLCQ002Y1";
+        model = "Pixel 10 Pro XL";
+        tailscale = "pixel-10-pro-xl";
+        cable_host = "the laptop (desktop-1od2lvu)";
+        notes = "Mars's daily phone: stock Android 17 with KernelSU root. Reboot it or change its settings only when the task calls for it.";
+      };
+
       notes = [
         "Fleet notes for this host: ~/Projects/agent-fleet/machines/argo.md."
       ];
