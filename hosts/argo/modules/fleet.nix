@@ -7,6 +7,10 @@ delib.module {
   nixos.ifEnabled.programs.fleet = {
     enable = true;
     desktops.enable = true;
+    broker = {
+      enable = true;
+      users = ["marshall"];
+    };
 
     host = {
       role = "Mars's main agent-work machine (Hetzner, Finland). Most agent threads run here and hand work to other machines only when it has to happen there.";
