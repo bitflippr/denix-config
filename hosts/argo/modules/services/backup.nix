@@ -56,8 +56,9 @@ in
         exclude = [
           "**/.#*"
           "**/.direnv"
-          "**/node_modules"
-          "**/target"
+          # Only under home: the staged T3 runtimes need their node_modules.
+          "${home}/**/node_modules"
+          "${home}/**/target"
 
           # Toolchains, package caches and SDKs.
           "${home}/.cache"
@@ -74,7 +75,8 @@ in
           "${home}/.local/share/graveyard"
 
           # T3's runtimes, tools and release pipeline are rebuilt on demand;
-          # its live databases are staged below instead.
+          # its live databases, active runtime and relay client are staged
+          # below instead.
           "${home}/.t3/runtime"
           "${home}/.t3/caches"
           "${home}/.t3/tools"
@@ -167,6 +169,15 @@ in
             sync_state "${home}/.t3/runtime/versions/$version" "$stage/t3-runtime/versions/$version"
           done
           "$install" -m 0600 ${home}/.t3/runtime/service-state.json ${home}/.t3/runtime/service-launcher.mjs "$stage/t3-runtime/"
+
+          # T3's relay client, which T3 only installs when a client asks.
+          sync_state ${home}/.t3/tools/cloudflared "$stage/t3-tools/cloudflared"
+
+          # personal-agent's release binary; its build tree on /scratch is left out.
+          if [[ -x ${home}/personal-agent/target/release/personal-agentd ]]; then
+            "$install" -d -m 0700 "$stage/personal-agent"
+            "$install" -m 0755 ${home}/personal-agent/target/release/personal-agentd "$stage/personal-agent/"
+          fi
 
           # State whose live copy is safe or atomically replaced.
           sync_state /var/lib/tailscale "$stage/tailscale"
