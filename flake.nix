@@ -41,6 +41,11 @@
       };
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     difftastic-src = {
       url = "github:skulldogged/difftastic";
       flake = false;
@@ -214,7 +219,7 @@
       };
   in rec {
     nixosConfigurations =
-      inputs.nixpkgs.lib.getAttrs ["navis" "polaris"]
+      inputs.nixpkgs.lib.getAttrs ["argo" "navis" "polaris"]
       (mkConfigurations "nixos");
 
     darwinConfigurations =

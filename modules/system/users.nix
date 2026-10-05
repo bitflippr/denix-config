@@ -12,6 +12,8 @@ delib.module {
     enable = boolOption false;
     extraGroups = listOption [];
     linger = boolOption false;
+    # Login shell. Agents on a host reached over SSH run bash one-liners, which fish rejects.
+    shell = enumOption ["bash" "fish"] "fish";
   };
 
   nixos.ifEnabled = {myconfig, ...}: {
@@ -22,7 +24,7 @@ delib.module {
         {
           isNormalUser = true;
           linger = myconfig.system.users.linger;
-          shell = pkgs.fish;
+          shell = pkgs.${myconfig.system.users.shell};
 
           extraGroups =
             [

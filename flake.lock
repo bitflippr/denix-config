@@ -304,6 +304,26 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789770686,
+        "narHash": "sha256-uZkBR7yHdIKUFB5SZdfgh1qkGfI3XmYmI/lTiquxbck=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "725ea35e410ad83be4931d1bff7e090eacaf3563",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "draconisplusplus": {
       "inputs": {
         "nixpkgs": [
@@ -1538,6 +1558,7 @@
         "cua": "cua",
         "denix": "denix",
         "difftastic-src": "difftastic-src",
+        "disko": "disko",
         "draconisplusplus": "draconisplusplus",
         "draconisplusplus-plugin-lab": "draconisplusplus-plugin-lab",
         "draconisplusplus-plugins": "draconisplusplus-plugins",
