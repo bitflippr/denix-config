@@ -7,7 +7,23 @@ delib.module {
   nixos.ifEnabled.programs.fleet = {
     enable = true;
     desktops.enable = true;
-    isolation.enable = true;
+    isolation = {
+      enable = true;
+      # Stalwart's admin and root account passwords; agents use the API key.
+      hide = ["/home/marshall/.config/stalwart"];
+    };
+    secrets = {
+      cloudflare = {
+        file = "/home/marshall/.config/cloudflare/api-token";
+        env = "CLOUDFLARE_API_TOKEN";
+        description = "Cloudflare API token for the cf CLI and api.cloudflare.com";
+      };
+      stalwart = {
+        file = "/home/marshall/.config/stalwart/api-key";
+        env = "STALWART_TOKEN";
+        description = "Stalwart admin API key; set STALWART_URL=https://mail.skulldogged.dev for stalwart-cli";
+      };
+    };
     broker = {
       enable = true;
       users = ["marshall"];
