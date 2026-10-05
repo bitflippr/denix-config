@@ -50,6 +50,20 @@ delib.module {
         navis = "the laptop's NixOS install; online only when booted";
       };
 
+      # `fleet job run` refuses new jobs below these, so a runaway build can't
+      # fill the mirror that holds the system and mail.
+      disk_floor = {
+        "/" = "15G";
+        "/scratch" = "100G";
+      };
+
+      caches = {
+        "/scratch/cache/marshall" = "per-tool caches (Nix eval, bun, opencode, mesa); rip any subfolder";
+        "/scratch/cache/marshall/mbx" = "Rust build cache and managed target dirs: `mbx gc`";
+        "/scratch/cargo-target" = "Cargo target dirs for services built here; rip a project's folder, it rebuilds";
+        "/nix/store" = "only through `nix-collect-garbage` as root, after asking Mars";
+      };
+
       devices.pixel = {
         serial = "57150DLCQ002Y1";
         model = "Pixel 10 Pro XL";
