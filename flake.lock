@@ -620,11 +620,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791218775,
-        "narHash": "sha256-YUnfM2htd27vmQf511W9xI0S/yMmtveV7r1oYt05cd4=",
+        "lastModified": 1791218925,
+        "narHash": "sha256-JcZSN54iew5sJhkR53h11LiYeJ5ISpi5t4Sf2m1uOrY=",
         "ref": "refs/heads/main",
-        "rev": "ec129cf5d318c5c3754ffc1a5cc1584adac9ee9a",
-        "revCount": 29,
+        "rev": "df13984f15affa9deb306c5b176ec1407ef93beb",
+        "revCount": 30,
         "type": "git",
         "url": "https://github.com/skulldogged/fleetd"
       },
