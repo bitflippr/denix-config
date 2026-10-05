@@ -7,6 +7,7 @@ delib.module {
   nixos.ifEnabled.programs.fleet = {
     enable = true;
     desktops.enable = true;
+    isolation.enable = true;
     broker = {
       enable = true;
       users = ["marshall"];
