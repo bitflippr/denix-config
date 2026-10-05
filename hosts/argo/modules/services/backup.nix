@@ -9,6 +9,47 @@
   backupStage = "/scratch/backup-stage";
   backupName = "argo";
   home = "/home/${config.myconfig.constants.username}";
+  # Hourly copies of T3's live databases, kept apart from the nightly stage.
+  homeStage = "/scratch/backup-stage-home";
+
+  # Matches the keep list agreed when builder became argo: unique work,
+  # identities and history; nothing that can be rebuilt or re-downloaded.
+  excludes = [
+    "**/.#*"
+    "**/.direnv"
+    # Only under home: the staged T3 runtimes need their node_modules.
+    "${home}/**/node_modules"
+    "${home}/**/target"
+
+    # Toolchains, package caches and SDKs.
+    "${home}/.cache"
+    "${home}/.npm"
+    "${home}/.bun"
+    "${home}/.nvm"
+    "${home}/.rustup"
+    "${home}/.cargo"
+    "${home}/.gradle"
+    "${home}/.m2"
+    "${home}/.vite-plus"
+    "${home}/Android"
+    "${home}/.local/share/claude"
+    "${home}/.local/share/graveyard"
+
+    # T3's runtimes, tools and release pipeline are rebuilt on demand;
+    # its live databases, active runtime and relay client are staged
+    # below instead.
+    "${home}/.t3/runtime"
+    "${home}/.t3/caches"
+    "${home}/.t3/tools"
+    "${home}/.t3/userdata/*.sqlite*"
+    "${home}/.local/state/t3code-channel/source"
+    "${home}/.local/state/t3code-channel/releases"
+
+    # Upstream checkouts kept beside local patches.
+    "${home}/Projects/android-helium-browser/chromium-*"
+    "${home}/Projects/android-helium-browser/depot_tools"
+    "${home}/Projects/android-helium-browser/helium"
+  ];
 in
   delib.module {
     name = "argo";
@@ -51,44 +92,7 @@ in
           backupStage
         ];
 
-        # Matches the keep list agreed when builder became argo: unique work,
-        # identities and history; nothing that can be rebuilt or re-downloaded.
-        exclude = [
-          "**/.#*"
-          "**/.direnv"
-          # Only under home: the staged T3 runtimes need their node_modules.
-          "${home}/**/node_modules"
-          "${home}/**/target"
-
-          # Toolchains, package caches and SDKs.
-          "${home}/.cache"
-          "${home}/.npm"
-          "${home}/.bun"
-          "${home}/.nvm"
-          "${home}/.rustup"
-          "${home}/.cargo"
-          "${home}/.gradle"
-          "${home}/.m2"
-          "${home}/.vite-plus"
-          "${home}/Android"
-          "${home}/.local/share/claude"
-          "${home}/.local/share/graveyard"
-
-          # T3's runtimes, tools and release pipeline are rebuilt on demand;
-          # its live databases, active runtime and relay client are staged
-          # below instead.
-          "${home}/.t3/runtime"
-          "${home}/.t3/caches"
-          "${home}/.t3/tools"
-          "${home}/.t3/userdata/*.sqlite*"
-          "${home}/.local/state/t3code-channel/source"
-          "${home}/.local/state/t3code-channel/releases"
-
-          # Upstream checkouts kept beside local patches.
-          "${home}/Projects/android-helium-browser/chromium-*"
-          "${home}/Projects/android-helium-browser/depot_tools"
-          "${home}/Projects/android-helium-browser/helium"
-        ];
+        exclude = excludes;
 
         extraBackupArgs = [
           "--cleanup-cache"
@@ -98,10 +102,14 @@ in
           "--tag=${backupName}"
           # Continues the history builder started before the move.
           "--host=${backupName}"
+          "--retry-lock=30m"
         ];
 
+        # --tag keeps this from pruning the hourly snapshots, and vice versa.
         pruneOpts = [
+          "--tag=${backupName}"
           "--group-by=host,tags"
+          "--retry-lock=30m"
           "--keep-daily=7"
           "--keep-weekly=5"
           "--keep-monthly=12"
@@ -185,6 +193,49 @@ in
         '';
       };
 
+      # Home is on the striped filesystem, so a dead drive loses it; hourly
+      # snapshots cap that at an hour. Mail is on the mirror and stays nightly.
+      services.restic.backups."${backupName}-home" = {
+        environmentFile = config.sops.templates."restic-b2.env".path;
+        passwordFile = config.sops.secrets.restic_repository_password.path;
+        paths = [home homeStage];
+        exclude = excludes;
+
+        extraBackupArgs = [
+          "--compression=auto"
+          "--exclude-caches"
+          "--one-file-system"
+          "--tag=${backupName}-home"
+          "--host=${backupName}"
+          "--retry-lock=30m"
+        ];
+
+        pruneOpts = [
+          "--tag=${backupName}-home"
+          "--group-by=host,tags"
+          "--retry-lock=30m"
+          "--keep-hourly=24"
+          "--keep-daily=7"
+        ];
+
+        timerConfig = {
+          OnCalendar = "hourly";
+          Persistent = true;
+          RandomizedDelaySec = "5m";
+        };
+
+        backupPrepareCommand = ''
+          #!${pkgs.runtimeShell}
+          set -euo pipefail
+          umask 0077
+          ${pkgs.coreutils}/bin/install -d -m 0700 ${homeStage}/t3
+          for db in ${home}/.t3/userdata/*.sqlite; do
+            [[ -f "$db" ]] || continue
+            ${pkgs.sqlite}/bin/sqlite3 "$db" ".backup '${homeStage}/t3/$(${pkgs.coreutils}/bin/basename "$db")'"
+          done
+        '';
+      };
+
       systemd = {
         services."restic-check-${backupName}-data" = {
           description = "Verify a rotating subset of the ${backupName} Restic repository";
@@ -211,7 +262,10 @@ in
           };
         };
 
-        tmpfiles.rules = ["d ${backupStage} 0700 root root - -"];
+        tmpfiles.rules = [
+          "d ${backupStage} 0700 root root - -"
+          "d ${homeStage} 0700 root root - -"
+        ];
       };
     };
   }
