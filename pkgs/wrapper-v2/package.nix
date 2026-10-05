@@ -38,6 +38,17 @@
     inherit src;
     dontConfigure = true;
     doCheck = false;
+    # Upstream reads /proc/self/status after the chroot, where /proc isn't
+    # mounted until a worker has run, so the first worker skips its PID
+    # namespace. Outside one, Polaris's 7-digit pids overflow the 16-bit
+    # thread ids in old bionic's mutexes and the worker deadlocks.
+    postPatch = ''
+      substituteInPlace src/launcher/wrapper.c \
+        --replace-fail '    if (ensure_dir(ROOTFS "/dev", 0755) != 0) return 1;' \
+          '    int new_pid_ns = has_cap_sys_admin();
+    if (ensure_dir(ROOTFS "/dev", 0755) != 0) return 1;' \
+        --replace-fail '    if (has_cap_sys_admin()) {' '    if (new_pid_ns) {'
+    '';
     buildPhase = ''
       $CC -Wall -Wextra -O2 src/launcher/wrapper.c -o wrapper
     '';
