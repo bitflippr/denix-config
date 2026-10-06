@@ -30,6 +30,12 @@ delib.module {
           # Incus already listens on 8443.
           port = 8444;
         };
+        # canis isn't NixOS: fleetd's macos/install.sh sets up its broker, and
+        # Tailscale Serve publishes its /mcp (8443 is taken there).
+        canis = {
+          tailnetName = "canis";
+          port = 8444;
+        };
       });
   };
 
