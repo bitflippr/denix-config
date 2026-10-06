@@ -57,7 +57,3 @@ https://github.com/skulldorged/t3code
 Select the APK ending in `-preview.apk`. Each workflow run uses a larger Android version code, so updates install over the previous preview build. Personal preview APKs target `arm64-v8a`, which covers the Pixel fleet while avoiding unused x86 and 32-bit native builds.
 
 Navis remains Nix-managed. Each successful fleet release pushes a small `modules/home/t3code-release.json` update to `denix-config`; Navis only needs to pull and rebuild. A separate auto-rebuild policy can be added later if every `denix-config` main commit is safe to apply unattended.
-
-## Recovery patches
-
-The historical Pi-era recovery patches stayed in `~/.local/lib/t3code-channel/patches` on argo when the updater moved here; they are not the current patch set. Do not replay them to reconstruct the current fork. The fork's Git history records the removal of Pi and subscription limits; normal scheduled runs advance that branch by merging upstream main and configured overlays.
