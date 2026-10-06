@@ -58,7 +58,6 @@ delib.module {
         # fleet browser goes out through Polaris's SOCKS proxy, from Mars's home
         # connection, so sites see a residential address instead of Hetzner's.
         browser_proxy = "socks5://100.92.239.38:1080";
-        browser_timezone = "America/New_York";
         owner = "Mars (they/them)";
 
         conventions = [
