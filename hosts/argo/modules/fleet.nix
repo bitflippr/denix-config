@@ -19,6 +19,11 @@ delib.module {
         enable = true;
         # Stalwart's admin and root account passwords; agents use the API key.
         hide = ["/home/marshall/.config/stalwart"];
+        # The T3 release updater runs git in these outside the sandbox.
+        readOnly = [
+          "/home/marshall/.local/state/t3code-channel"
+          "/home/marshall/denix-config"
+        ];
         # Other hosts' agents arrive through Tailscale Serve on port 2223.
         sshKeys = lib.mapAttrs (_: key: {
           inherit key;

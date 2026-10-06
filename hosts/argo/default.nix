@@ -31,6 +31,7 @@ delib.host {
       packages.enable = true;
       shell.enable = true;
       t3code.enable = true;
+      t3codeChannel.enable = true;
     };
 
     programs = {
