@@ -75,12 +75,12 @@ delib.module {
         delegate = {
           "Most agent work, Android, desktops and the phone" = "argo (`ssh argo`; Tailscale name builder)";
           "Apple builds, iOS Simulator, iPad and macOS GUI work" = "canis (`ssh canis`)";
-          "Windows-native builds and GUI runs" = "the win11 Incus VM here, or the laptop only when Mars agrees";
+          "Windows-native builds and GUI runs" = "the win11 Incus VM here (agents can't reach the laptop)";
         };
 
         peers = {
           builder = "argo, Mars's main agent machine (Tailscale name builder)";
-          desktop-1od2lvu = "Mars's Windows laptop and daily desktop (`ssh windows`)";
+          desktop-1od2lvu = "Mars's Windows laptop and daily desktop; agents here can't reach it (it accepts no agent keys), so ask Mars, who can run it from T3 on the laptop";
           canis = "Mars's MacBook Air (macOS)";
           pixel-10-pro-xl = "Mars's phone; argo holds its adb";
           navis = "the laptop's NixOS install; online only when booted";

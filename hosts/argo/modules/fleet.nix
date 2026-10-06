@@ -84,16 +84,16 @@ delib.module {
 
         delegate = {
           "Windows-native builds and GUI runs (WinUI, MSVC)" = "Polaris's win11 Incus VM";
-          "Checks that need Mars's laptop hardware (RTX 3050, ASUS drivers)" = "the laptop (`ssh windows`), only when Mars agrees";
-          "fastboot, recovery and other USB-only phone work" = "the laptop, where the phone's cable plugs in";
+          "Checks that need Mars's laptop hardware (RTX 3050, ASUS drivers)" = "the laptop: ask Mars (agents here can't reach it)";
+          "fastboot, recovery and other USB-only phone work" = "the laptop, where the phone's cable plugs in: ask Mars";
           "Apple builds, iOS Simulator, iPad and macOS GUI work" = "canis (`ssh canis`)";
           "Polaris's homelab services and config" = "Polaris (`ssh polaris`); its config is denix-config hosts/polaris";
-          "GPU work beyond argo's small Radeon iGPU" = "Polaris or the laptop";
+          "GPU work beyond argo's small Radeon iGPU" = "Polaris (or the laptop, through Mars)";
         };
 
         peers = {
           polaris = "NixOS home server: homelab services, GPU, Windows VM";
-          desktop-1od2lvu = "Mars's Windows laptop and daily desktop (`ssh windows`)";
+          desktop-1od2lvu = "Mars's Windows laptop and daily desktop; agents here can't reach it (it accepts no agent keys), so ask Mars, who can run it from T3 on the laptop";
           canis = "Mars's MacBook Air (macOS)";
           pixel-10-pro-xl = "Mars's phone: adb over Tailscale, and T3 runs on it";
           navis = "the laptop's NixOS install; online only when booted";

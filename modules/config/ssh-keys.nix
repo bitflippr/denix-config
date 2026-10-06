@@ -5,18 +5,14 @@ delib.module {
   name = "sshKeys";
 
   options.sshKeys = with delib; {
-    # Mars's own devices: ordinary, unrestricted logins.
+    # Mars's own devices: ordinary, unrestricted logins. The Windows laptop
+    # (mars@navis-win) has no agent key: agents elsewhere don't reach it.
     personal = readOnly (listOfOption str [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB7fPGt6KAzwOVQqOV0JT74unUXDbdQHvD3yufYyvLKW mars@navis-win"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEDjIi6smq8b18XLhj+BkxQhBdrCkDJKc+JopZUnkyHV Windows"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIINauytpggm6187T/fjWhS2p1Z9GGbO0TmiuIn6Z92nj marshall@DESKTOP-1OD2LVU"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBsHqYKt58eFcZo7UdPX45CaEhLeGge+cE1Gdt74IHSv MacBook"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL2vmQG3o3yMTXUbHYM7evCpUo/V+gK8Lofajt/hEjrB navis"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIARRfEXoLrza1riqJJb0qFVYqOhNpXJEP9VI11K2RPJH marshall@navis"
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLNLzoJDzuVhWZXuUO70Yj6bWg6t8kBFH0fWZIIwTC1w9w7Uv0ERuSBcp752fOpkm7fY5c2lyt12/ymEOParbhk= navis-tpm-polaris"
-      # The laptop's ssh aliases still use its fleet key for Mars's own
-      # logins; drop this once they use mars@navis-win.
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWv+BpesN2xxRw+nlIeOSSL+RBpvnTalGMZ4v9n5SAP fleet-windows"
     ]);
 
     # Each host's agent key (~/.ssh/id_ed25519_fleet). On hosts with fleet's
