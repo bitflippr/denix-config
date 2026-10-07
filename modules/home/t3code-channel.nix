@@ -26,6 +26,10 @@ delib.module {
         Description = "Build and deploy the personal T3 Code release channel";
         After = ["network-online.target"];
         Wants = ["network-online.target"];
+        # A run waits for its release build for 20 minutes or more; restarting
+        # it during a switch made Home Manager time out and restart it again,
+        # dispatching a build each time. The next timer run uses the new one.
+        X-SwitchMethod = "keep-old";
       };
       Service = {
         Type = "oneshot";
