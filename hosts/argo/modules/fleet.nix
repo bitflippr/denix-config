@@ -17,8 +17,9 @@ delib.module {
       containers.enable = true;
       isolation = {
         enable = true;
-        # Stalwart's admin and root account passwords; agents use the API key.
-        hide = ["/home/marshall/.config/stalwart"];
+        # Stalwart's passwords, and the T3 updater's alert webhook and signing
+        # secret (a request to it starts a full-access agent run).
+        hide = ["/home/marshall/.config/stalwart" "/home/marshall/.config/t3code-channel"];
         # The T3 release updater runs git in these outside the sandbox.
         readOnly = [
           "/home/marshall/.local/state/t3code-channel"

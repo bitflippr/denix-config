@@ -39,6 +39,8 @@ has not changed. A new nightly label starts again at `.personal.1`. The switch f
 independent patch counter lowers the base version; clients that reject downgrades may need a one-time
 manual installation. Subsequent versions follow upstream ordering.
 
+When a run ends blocked or failed, `alert.mjs` posts the incident once to a T3 webhook task ("T3 release channel stuck"), which starts a full-access agent thread to fix it and report to Mars. The webhook URL and its HMAC signing secret are in `~/.config/t3code-channel/alert.json` (mode 600, hidden from the agent sandbox); the task refuses unsigned requests. `node alert.mjs "" --test` sends a test the agent only acknowledges. The last incident alerted is in `alerted.json` in the state directory.
+
 `health.json` records the updater's current stage, source commits, workflow URL, and either a healthy,
 blocked, or failed condition. `health-check.mjs` converts that file into Personal Agent's
 transition-aware `status_check` protocol. It also reports a problem if the three-hour updater has not

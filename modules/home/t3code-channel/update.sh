@@ -56,6 +56,10 @@ write_health() {
   ' "$temporary_health" "$status" "$incident_key" "$summary" "$current_stage" \
     "$origin_sha" "$main_sha" "$nightly_tag" "$integration_sha" "$workflow_url" "$overlay_shas_json"
   mv "$temporary_health" "$health_file"
+  # A stuck updater asks T3 for an agent to fix it (once per incident).
+  if [[ "$status" == "blocked" || "$status" == "failed" ]]; then
+    node "$script_dir/alert.mjs" "$health_file" || true
+  fi
 }
 
 health_has_incident() {
