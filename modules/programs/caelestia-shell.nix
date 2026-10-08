@@ -841,7 +841,7 @@ delib.module {
           ];
 
         services = {
-          weatherLocation = lib.optionalString (myconfig.private.weather != null) "${myconfig.private.weather.lat},${myconfig.private.weather.lon}";
+          weatherLocation = "40.0,-74.2";
           useFahrenheit = true;
           smartScheme = false;
         };

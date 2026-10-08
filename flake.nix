@@ -252,13 +252,11 @@
 
             (writeScriptBin "build" ''
               nix fmt
-              # The private values in modules/config/private.nix are decrypted
-              # during evaluation, which needs builtins.exec for this build only.
               nh ${
                 if stdenv.hostPlatform.isDarwin
                 then "darwin"
                 else "os"
-              } switch -- --no-eval-cache --option allow-unsafe-native-code-during-evaluation true
+              } switch
             '')
             (writeScriptBin "up" "nix flake update")
           ];
