@@ -5,7 +5,7 @@
     cua.url = "github:trycua/cua/cua-driver-rs-v0.21.0";
     nix-colors.url = "github:Misterio77/nix-colors";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixvim.url = "github:skulldogged/nixvim-new";
+    nixvim.url = "github:bitflippr/nixvim-new";
 
     bang-bang = {
       url = "github:oh-my-fish/plugin-bang-bang";
@@ -47,17 +47,17 @@
     };
 
     difftastic-src = {
-      url = "github:skulldogged/difftastic";
+      url = "github:bitflippr/difftastic";
       flake = false;
     };
 
     draconisplusplus = {
-      url = "github:skulldogged/draconisplusplus-monorepo";
+      url = "github:bitflippr/draconisplusplus-monorepo";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     draconisplusplus-plugin-lab = {
-      url = "github:skulldogged/draconisplusplus-plugin-lab";
+      url = "github:bitflippr/draconisplusplus-plugin-lab";
       inputs = {
         draconisplusplus.follows = "draconisplusplus";
         nixpkgs.follows = "nixpkgs";
@@ -66,7 +66,7 @@
     };
 
     draconisplusplus-plugins = {
-      url = "github:skulldogged/draconisplusplus-plugins";
+      url = "github:bitflippr/draconisplusplus-plugins";
       inputs = {
         draconisplusplus.follows = "draconisplusplus";
         nixpkgs.follows = "nixpkgs";
@@ -76,7 +76,7 @@
 
     # Private; fetched over HTTPS with the user's git credentials.
     fleetd = {
-      url = "git+https://github.com/skulldogged/fleetd";
+      url = "git+https://github.com/bitflippr/fleetd";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -112,7 +112,7 @@
     };
 
     jellyfin-src = {
-      url = "github:skulldogged/jellyfin";
+      url = "github:bitflippr/jellyfin";
       flake = false;
     };
 
@@ -152,7 +152,7 @@
     };
 
     snappy-switcher = {
-      url = "github:skulldogged/snappy-switcher/feature/window-previews";
+      url = "github:bitflippr/snappy-switcher/feature/window-previews";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -172,7 +172,7 @@
     };
 
     trmnl-fleet = {
-      url = "github:skulldogged/trmnl-fleet";
+      url = "github:bitflippr/trmnl-fleet";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

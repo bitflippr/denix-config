@@ -293,13 +293,13 @@
       "locked": {
         "lastModified": 1773249415,
         "narHash": "sha256-/JGMX/K1II+Ib6nAo+qmKDP6kv5C2tK1s/++sU4gvmg=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "difftastic",
         "rev": "d45676da59a5356a5b2fa3bb475914552330ba84",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "difftastic",
         "type": "github"
       }
@@ -335,13 +335,13 @@
       "locked": {
         "lastModified": 1790964080,
         "narHash": "sha256-5ATehp8nvBockFW0x2a6YjxnbWzwxGDEhFvEYi18PMg=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-monorepo",
         "rev": "329725b48cd50074e18fa3c68be7a8b9de50d80c",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-monorepo",
         "type": "github"
       }
@@ -362,13 +362,13 @@
       "locked": {
         "lastModified": 1788806721,
         "narHash": "sha256-ElIEjfIAui7CoIm83glmsFwusU4BMksHqLHyOmQYf5c=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-plugin-lab",
         "rev": "b0665bc5aac51193dfe4a2fff4dbf277b65aca50",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-plugin-lab",
         "type": "github"
       }
@@ -389,13 +389,13 @@
       "locked": {
         "lastModified": 1788806708,
         "narHash": "sha256-XaU6MYuo6s4ehqim7gf4lp/KRB3HUClgr1xmaXa4JcU=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-plugins",
         "rev": "52f5d9f3096b679336aefd367102baac93d914f1",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "draconisplusplus-plugins",
         "type": "github"
       }
@@ -626,11 +626,11 @@
         "rev": "42b4f08df5841274f8b4ee9ed29895473cb6d706",
         "revCount": 67,
         "type": "git",
-        "url": "https://github.com/skulldogged/fleetd"
+        "url": "https://github.com/bitflippr/fleetd"
       },
       "original": {
         "type": "git",
-        "url": "https://github.com/skulldogged/fleetd"
+        "url": "https://github.com/bitflippr/fleetd"
       }
     },
     "gitignore": {
@@ -1042,13 +1042,13 @@
       "locked": {
         "lastModified": 1791147751,
         "narHash": "sha256-bL+c7Wt5Hn2rAomTZFQa4FjVSliRCNs4bC1TUca3EyU=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "jellyfin",
         "rev": "1251c230b1b3f19ce5e674d9a4e794a613a152e9",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "jellyfin",
         "type": "github"
       }
@@ -1420,13 +1420,13 @@
       "locked": {
         "lastModified": 1770496258,
         "narHash": "sha256-ujuKhyl8yXKSmLuk2T3o8jD3D11hs1BnGyoiMvpphvA=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "nixvim-new",
         "rev": "975db84b33080991ce509691a0d768427e2b7286",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "nixvim-new",
         "type": "github"
       }
@@ -1638,13 +1638,13 @@
       "locked": {
         "lastModified": 1785099646,
         "narHash": "sha256-LOS/iqZ3XZ8omrC7O4QcSX5pe8R7YL+X211G4zwug5g=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "snappy-switcher",
         "rev": "7b779cb5fdf983b8cceb8eb1eb06446c2d699656",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "ref": "feature/window-previews",
         "repo": "snappy-switcher",
         "type": "github"
@@ -1905,13 +1905,13 @@
       "locked": {
         "lastModified": 1790473999,
         "narHash": "sha256-9j+sPUJlQQT1QUVyhIz3JSerEClrTRj0Oiuu2h2k6Vc=",
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "trmnl-fleet",
         "rev": "bb7a42208814040c964774edd79e2fb474041fcc",
         "type": "github"
       },
       "original": {
-        "owner": "skulldogged",
+        "owner": "bitflippr",
         "repo": "trmnl-fleet",
         "type": "github"
       }
