@@ -62,6 +62,9 @@ const body = {
   incident,
   workflow: health.workflowUrl ?? "",
   log,
+  // Names this alert, so T3 starts one agent for it even if a later alert
+  // repeats the same incident.
+  sent: new Date().toISOString(),
 };
 
 const payload = JSON.stringify(body);
@@ -74,7 +77,7 @@ try {
     signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  fs.writeFileSync(alertedPath, `${JSON.stringify({ incident: body.incident, at: new Date().toISOString() })}\n`);
+  fs.writeFileSync(alertedPath, `${JSON.stringify({ incident: body.incident, at: body.sent })}\n`);
   console.log(`Alerted T3 about: ${body.summary}`);
 } catch (error) {
   console.log(`Couldn't alert T3 (${error.message}); the incident is still in health.json.`);
