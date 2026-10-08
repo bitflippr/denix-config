@@ -364,7 +364,14 @@ fi
 current_stage="publishing integration branch"
 git -C "$source_repo" push origin main
 integration_active=0
-gh workflow run "personal-release.yml" --repo "$fork_repo" --ref main --json < "$workflow_inputs_file"
+dispatch_output="$(gh workflow run "personal-release.yml" --repo "$fork_repo" --ref main --json < "$workflow_inputs_file")"
+printf '%s\n' "$dispatch_output"
+# A retry of an unchanged integration shares its commit with the earlier failed
+# run, so wait on the run gh reports for this dispatch when it reports one.
+dispatched_run_id=""
+if [[ "$dispatch_output" =~ /actions/runs/([0-9]+) ]]; then
+  dispatched_run_id="${BASH_REMATCH[1]}"
+fi
 
 log "Waiting for the personal release workflow."
 current_stage="waiting for release workflow"
@@ -378,13 +385,15 @@ for attempt in $(seq 1 "$workflow_attempts"); do
     let input = "";
     process.stdin.on("data", (chunk) => { input += chunk; });
     process.stdin.on("end", () => {
-      const sha = process.argv[1];
-      const run = JSON.parse(input).find(
-        (item) => item.headSha === sha && item.event === "workflow_dispatch",
+      const [sha, runId] = process.argv.slice(1);
+      const run = JSON.parse(input).find((item) =>
+        runId
+          ? String(item.databaseId) === runId
+          : item.headSha === sha && item.event === "workflow_dispatch",
       );
       if (run) process.stdout.write([run.databaseId, run.status, run.conclusion ?? "", run.url].join("|"));
     });
-  ' "$integration_sha" <<<"$runs_json")"
+  ' "$integration_sha" "$dispatched_run_id" <<<"$runs_json")"
   if [[ -z "$run_line" ]]; then
     sleep "$workflow_sleep_seconds"
     continue
