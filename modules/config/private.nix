@@ -8,8 +8,10 @@
   # Values this repo keeps out of public view. They're sops-encrypted in
   # secrets/eval.yaml and decrypted while the config is evaluated, because
   # some of them end up in build outputs (draconis++ compiles its plugin
-  # config in). Decryption needs allow-unsafe-native-code-during-evaluation
-  # (set below) and the eval age key, which sops-nix installs from
+  # config in). Decryption needs allow-unsafe-native-code-during-evaluation,
+  # which `fleet switch` and the dev shell's `build` pass for these builds
+  # only (along with --no-eval-cache, since the eval cache ignores that
+  # setting), and the eval age key, which sops-nix installs from
   # secrets/eval-key.yaml and Home Manager copies to
   # ~/.config/sops/age/eval.txt, where sandboxed builds can read it too.
   # Without either, every value is null and the modules using them leave
@@ -64,8 +66,6 @@ in
     };
 
     nixos.always = {myconfig, ...}: {
-      nix.settings.allow-unsafe-native-code-during-evaluation = true;
-
       sops.secrets.sops_eval_age_key =
         evalKey
         // {
@@ -73,8 +73,6 @@ in
           mode = "0400";
         };
     };
-
-    darwin.always.nix.settings.allow-unsafe-native-code-during-evaluation = true;
 
     home.always = {
       home.activation.sopsEvalKey = inputs.home-manager.lib.hm.dag.entryAfter ["writeBoundary"] ''
