@@ -168,8 +168,19 @@ fi
 trap record_unexpected_failure ERR
 
 # A published release is deployable independently of newer source changes.
-# Retry it before fetching or merging, which may need manual intervention.
+# Retry it before fetching or merging, which may need manual intervention,
+# unless someone has pushed to the fork's main since: that newer source
+# replaces it, for example to fix a target the pending release can't deploy to.
+pending_superseded=false
 if [[ -f "$state_file" ]] && [[ "$(node -e 'const s=require(process.argv[1]); process.stdout.write(s.deploymentStatus ?? "")' "$state_file")" == "pending" ]]; then
+  pending_integration="$(node -e 'process.stdout.write(require(process.argv[1]).integrationSha ?? "")' "$state_file")"
+  fork_main="$(git ls-remote "$fork_url" refs/heads/main 2>/dev/null | cut -f1)" || fork_main=""
+  if [[ -n "$fork_main" && -n "$pending_integration" && "$fork_main" != "$pending_integration" ]]; then
+    log "The fork's main moved past the pending release; building the newer source instead."
+    pending_superseded=true
+  fi
+fi
+if [[ "$pending_superseded" == false && -f "$state_file" ]] && [[ "$(node -e 'const s=require(process.argv[1]); process.stdout.write(s.deploymentStatus ?? "")' "$state_file")" == "pending" ]]; then
   version="$(node -e 'const s=require(process.argv[1]); process.stdout.write(s.version ?? "")' "$state_file")"
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
     log "The pending deployment does not record a valid release version."
