@@ -1,5 +1,6 @@
 {
   delib,
+  lib,
   inputs,
   pkgs,
   ...
@@ -56,14 +57,15 @@ delib.module {
             json_format = true;
             markdown_format = true;
             now_playing = true;
+            # The location is kept out of the public repo; see modules/config/private.nix.
             weather = {
-              enable = true;
+              enable = myconfig.private.weather != null;
               settings = {
                 provider = "openmeteo";
                 units = "imperial";
-                coords = {
-                  lat = 0.000000;
-                  lon = 0.000000;
+                coords = lib.optionalAttrs (myconfig.private.weather != null) {
+                  lat = builtins.fromJSON myconfig.private.weather.lat;
+                  lon = builtins.fromJSON myconfig.private.weather.lon;
                 };
               };
             };

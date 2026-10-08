@@ -13,6 +13,7 @@ in
       sops.secrets = {
         forgejo_token = {};
         mailer_passwd = {};
+        mailer_user = {};
       };
 
       services.forgejo = {
@@ -23,6 +24,7 @@ in
         lfs.enable = true;
 
         secrets.mailer.PASSWD = config.sops.secrets.mailer_passwd.path;
+        secrets.mailer.USER = config.sops.secrets.mailer_user.path;
 
         settings = {
           log.LEVEL = "Debug";
@@ -44,7 +46,6 @@ in
             ENABLED = true;
             SMTP_ADDR = "email-smtp.us-east-2.amazonaws.com";
             FROM = "noreply@git.pupbrained.dev";
-            USER = "REDACTED";
             SEND_AS_PLAIN_TEXT = true;
           };
 
