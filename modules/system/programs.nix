@@ -40,6 +40,26 @@ delib.module {
           glibc
           openssl
           stdenv.cc.cc
+          # T3's headless Chrome, which renders agents' html_preview and
+          # html_render pages and runs its server-side browser tabs.
+          alsa-lib
+          at-spi2-atk
+          at-spi2-core
+          atk
+          dbus
+          expat
+          glib
+          libgbm
+          libxkbcommon
+          nspr
+          nss
+          libX11
+          libXcomposite
+          libXdamage
+          libXext
+          libXfixes
+          libXrandr
+          libxcb
         ];
       };
 
