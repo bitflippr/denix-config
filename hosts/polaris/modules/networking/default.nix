@@ -1,4 +1,8 @@
-{delib, ...}: let
+{
+  delib,
+  lib,
+  ...
+}: let
   lanIPv4 = "192.168.1.0/24";
 in
   delib.module {
@@ -8,7 +12,14 @@ in
       services.openssh.openFirewall = false;
 
       networking = {
-        networkmanager.dns = "none";
+        networkmanager = {
+          dns = "none";
+          # The shared networking module inserts public resolvers, which NixOS
+          # does with a dispatcher script that rewrites /etc/resolv.conf on
+          # every network event, putting them ahead of blocky. They then
+          # answer NXDOMAIN for tailnet names, breaking approvals from argo.
+          insertNameservers = lib.mkForce [];
+        };
         dhcpcd.extraConfig = "nohook resolv.conf";
         resolvconf.enable = false;
         nameservers = ["127.0.0.1" "::1"];
