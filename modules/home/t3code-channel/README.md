@@ -7,7 +7,7 @@ Builder checks upstream T3 Code `main` and the pull requests listed in `overlays
 - the preview Android APK;
 - the server package.
 
-After all checks and builds pass, Builder verifies the release checksums, deploys Polaris and Canis, updates the Navis Nix pin in `denix-config`, and switches Builder last. The Linux switches use the T3 service launcher's trial-and-rollback protocol. The Canis launchd switch keeps a plist backup and restores it if the new server does not become healthy.
+After all checks and builds pass, Builder verifies the release checksums, deploys Polaris and Canis, updates the Navis Nix pin in `denix-config`, and switches Builder last. The Linux switches use the T3 service launcher's trial-and-rollback protocol. The Canis launchd switch keeps a plist backup and a copy of the database and restores them if the new server does not become healthy. Once it is healthy, the switch keeps the active and previous installs and that switch's database copy, and removes older ones along with the downloaded package.
 
 Fleet deployment checks each machine's local activity database immediately before switching its service. If active turns are present, that machine is left on its current version while other machines continue. The release remains pending, health stays updating with a waiting-for-active-turns message, and the next timer run retries the same release without rebuilding it. An unavailable or unrecognized activity database fails closed.
 

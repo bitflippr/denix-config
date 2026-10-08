@@ -201,6 +201,25 @@ restore_old() {
   launchctl bootstrap "gui/$(id -u)" "$plist"
 }
 
+# Every release adds a 700 MB install and a 1.6 GB database copy, which once
+# filled canis's disk. Once the new server is healthy, keep the active and
+# previous installs, the one ~/.local/bin/t3 links to, and this switch's
+# database copy.
+prune() {
+  local previous linked dir copy
+  previous="$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:1' "$backup")"
+  linked="$(readlink "$HOME/.local/bin/t3" || true)"
+  for dir in "$install_root"/[0-9]*/; do
+    dir="${dir%/}"
+    [[ "$dir" == "$target_dir" || "$previous" == "$dir"/* || "$linked" == "$dir"/* ]] && continue
+    rm -rf "$dir" || echo "Could not remove $dir" >&2
+  done
+  for copy in "$plist".before-*.database.*; do
+    [[ "$copy" == "$database_backup" ]] || rm -rf "$copy" || echo "Could not remove $copy" >&2
+  done
+  rm -rf "$HOME/.cache/t3code-channel" || echo "Could not remove the cached release" >&2
+}
+
 database_backup="$(mktemp -d "${backup}.database.XXXXXX")" || {
   resume_original
   exit 1
@@ -224,6 +243,7 @@ fi
 
 for attempt in $(seq 1 60); do
   if curl -fsS http://127.0.0.1:3773/ >/dev/null; then
+    prune
     exit 0
   fi
   sleep 2
