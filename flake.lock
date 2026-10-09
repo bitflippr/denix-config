@@ -620,11 +620,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791496141,
-        "narHash": "sha256-+8YyGN8eyN4FLFmdqko7U1M8T1G+SWx/RlxenRyr/wg=",
+        "lastModified": 1791559571,
+        "narHash": "sha256-UmGFcmTbEVnReZpwIhddrROujGYoJxKGmSE7PiAtcPo=",
         "ref": "refs/heads/main",
-        "rev": "2302c56f055736d500a55d7920a294d218ec737b",
-        "revCount": 72,
+        "rev": "f6810870fc6fdc6bde7bac4581e9790b0ee9460a",
+        "revCount": 73,
         "type": "git",
         "url": "https://github.com/bitflippr/fleetd"
       },
