@@ -44,7 +44,14 @@ install_linux_candidate() {
 
 mkdir -p "$release_dir"
 log "Downloading and verifying release assets for ${version}."
-gh release download "$tag" --repo "$fork_repo" --dir "$release_dir" --clobber
+# GitHub's asset downloads sometimes time out (HTTP 504); a few tries spare a
+# finished release from waiting three hours for the next timer run.
+for attempt in 1 2 3 4; do
+  gh release download "$tag" --repo "$fork_repo" --dir "$release_dir" --clobber && break
+  (( attempt == 4 )) && exit 1
+  log "Downloading the release assets failed; trying again in $((attempt * 30)) seconds."
+  sleep $((attempt * 30))
+done
 (
   cd "$release_dir"
   sha256sum --check SHA256SUMS
