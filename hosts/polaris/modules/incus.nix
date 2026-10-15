@@ -66,9 +66,10 @@ in
 
             polaris-tailnet-vm-ports = {
               description = "Publish Incus VM services on the Polaris Tailscale address";
-              after = ["network-online.target" "tailscaled.service"];
-              wants = ["network-online.target"];
-              requires = ["tailscaled.service"];
+              # Serve mappings outlast tailscaled restarts, so this only
+              # wants it; requiring it would unpublish them on each restart.
+              after = ["network-online.target" "tailscale-online.target"];
+              wants = ["network-online.target" "tailscale-online.target"];
               wantedBy = ["multi-user.target"];
               path = [pkgs.tailscale];
               serviceConfig = {

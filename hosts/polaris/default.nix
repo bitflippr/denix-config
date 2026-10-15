@@ -46,6 +46,7 @@ delib.host {
     system = {
       environment.enable = true;
       fleetApprovals.enable = true;
+      fleetSsh.enable = true;
       hardware.enable = true;
       i18n.enable = true;
       nix.enable = true;

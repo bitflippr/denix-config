@@ -31,9 +31,11 @@ delib.module {
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [1080];
 
+    # It binds the tailnet address, so it waits for it. It only wants
+    # tailscaled: the bound socket outlasts a tailscaled restart.
     systemd.services.microsocks = {
-      after = ["tailscaled.service"];
-      requires = ["tailscaled.service"];
+      after = ["tailscale-online.target"];
+      wants = ["tailscale-online.target"];
     };
 
     networking.wireguard.interfaces.wg-mullvad = {

@@ -73,10 +73,14 @@ delib.module {
     systemd.services.fleet-approval-endpoint = {
       description = "Fleet approval authority over tailnet HTTPS";
       wantedBy = ["multi-user.target"];
-      after = ["tailscaled.service" "nginx.service"];
-      requires = ["tailscaled.service" "nginx.service"];
-      # tailscaled starts before it has logged in, and `tailscale serve`
-      # refuses until it has; at boot that left the endpoint down for good.
+      # Wanting rather than requiring tailscaled keeps its restarts from
+      # stopping this, which would take the Serve mapping down with it.
+      after = ["tailscale-online.target" "nginx.service"];
+      wants = ["tailscale-online.target"];
+      requires = ["nginx.service"];
+      # `tailscale serve` refuses until Tailscale has logged in, which the
+      # wait gives up on after a minute; at boot that left the endpoint down
+      # for good.
       startLimitIntervalSec = 0;
       serviceConfig = {
         Type = "oneshot";

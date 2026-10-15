@@ -11,6 +11,7 @@ delib.host {
     system = {
       environment.enable = true;
       fleetApprovals.enable = true;
+      fleetSsh.enable = true;
       nix.enable = true;
       programs.enable = true;
       security.enable = true;

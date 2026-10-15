@@ -1,8 +1,4 @@
-{
-  delib,
-  lib,
-  ...
-}:
+{delib, ...}:
 # What `fleet where` tells agents about argo. Keep it to what an agent needs
 # to work here without asking; the fleet notes hold the history.
 delib.module {
@@ -15,6 +11,7 @@ delib.module {
       enable = true;
       desktops.enable = true;
       containers.enable = true;
+      # Other hosts' agents arrive as system.fleetSsh sets up.
       isolation = {
         enable = true;
         # Stalwart's passwords, and the T3 updater's alert webhook and signing
@@ -25,11 +22,6 @@ delib.module {
           "/home/marshall/.local/state/t3code-channel"
           "/home/marshall/denix-config"
         ];
-        # Other hosts' agents arrive through Tailscale Serve on port 2223.
-        sshKeys = lib.mapAttrs (_: key: {
-          inherit key;
-          from = "127.0.0.1";
-        }) (removeAttrs myconfig.sshKeys.agents ["argo"]);
       };
       secrets = {
         cloudflare = {
