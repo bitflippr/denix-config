@@ -42,7 +42,8 @@ delib.module {
           "To switch Polaris, run `fleet switch --on polaris --reason WHY` from argo, or here pull ~/nix-config (`git -C ~/nix-config pull --ff-only`) and run `fleet switch --reason WHY` in it: either builds as you and asks Mars to activate the build. Never run nixos-rebuild over SSH; a tailscaled restart kills the session mid-switch."
           "Use `fleet job run` for anything that may outlive a tool call. Remove files with `rip`, not rm."
           "Agents run in fleet's sandbox. Use fleet container for project containers and fleet vm start/exec win11 for guest work; host Incus configuration needs fleet elevate approval."
-          "There's no python3 here; use node to parse JSON. Over SSH the login shell is fish, so wrap bash syntax in `bash -c`."
+          "There's no python3 here; use node to parse JSON. `fleet on polaris -- CMD` from another host runs bash; plain ssh lands in fish, so wrap bash syntax in `bash -c` there."
+          "Work on other hosts through fleet rather than raw ssh: `fleet on HOST [--in PROJECT] -- CMD`, `fleet job run --on HOST -- CMD` for anything long, `fleet cp` and `fleet sync --to HOST` for files and checkouts."
         ];
 
         paths = {
@@ -83,7 +84,11 @@ delib.module {
           canis = "Mars's MacBook Air (macOS)";
           pixel-10-pro-xl = "Mars's phone; argo holds its adb";
           navis = "the laptop's NixOS install; online only when booted";
+          vela = "the laptop's macOS install (Intel, RTX 3050); online only when booted";
         };
+
+        # The laptop boots as one of these at a time.
+        machines.laptop = ["desktop-1od2lvu" "navis" "vela"];
 
         notes = [
           "Fleet notes for this host: ~/Projects/agent-fleet/machines/polaris.md."
