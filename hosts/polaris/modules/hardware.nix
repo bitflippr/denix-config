@@ -1,5 +1,7 @@
 {
+  config,
   delib,
+  lib,
   pkgs,
   ...
 }:
@@ -44,15 +46,26 @@ delib.module {
         ];
       };
 
+      # The data SSD is on USB, and after a reboot it has taken 40 seconds to
+      # enumerate. nofail keeps boot from waiting; only what needs /mnt does.
       "/mnt" = {
         device = "/dev/disk/by-label/POLARIS_DATA";
         fsType = "ext4";
         options = [
           "nofail"
-          "x-systemd.device-timeout=10s"
+          "x-systemd.device-timeout=3min"
         ];
       };
     };
+
+    # Whatever requires /mnt and normally starts at boot also starts when it
+    # mounts. A unit whose dependency failed stays inactive, not failed, so a
+    # disk that turned up late used to leave these quietly down. Units with no
+    # wantedBy (timer-run backups) are left alone.
+    systemd.units =
+      lib.mapAttrs' (name: _: lib.nameValuePair "${name}.service" {wantedBy = ["mnt.mount"];})
+      (lib.filterAttrs (_: service: lib.elem "mnt.mount" service.requires && service.wantedBy != [])
+        config.systemd.services);
 
     swapDevices = [
       {
