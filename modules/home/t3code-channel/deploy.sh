@@ -94,6 +94,17 @@ server_tgz="$3"
 switch_script="$4"
 check_idle_script="$5"
 target_dir="$HOME/.t3/runtime/versions/$version"
+# The launcher keeps every install it has ever switched to, and each release also
+# leaves its downloaded files behind. Keep the running install and the target; a
+# full disk fails the switch's database backup.
+for stale_root in "$HOME/.t3/runtime/versions" "$HOME/.cache/t3code-channel"; do
+  [[ -d "$stale_root" ]] || continue
+  for stale in "$stale_root"/*; do
+    [[ -d "$stale" ]] || continue
+    [[ "$(basename "$stale")" == "$version" || "$(basename "$stale")" == "$current" ]] && continue
+    rm -rf -- "$stale"
+  done
+done
 if [[ ! -x "$target_dir/t3" || ! -f "$target_dir/.install-complete" ]] || [[ "$(<"$target_dir/.install-complete")" != "$version" ]]; then
   mkdir -p "$target_dir"
   tar -xzf "$server_tgz" -C "$target_dir" --strip-components=1
