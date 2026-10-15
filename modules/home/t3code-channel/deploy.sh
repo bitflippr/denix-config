@@ -95,13 +95,16 @@ switch_script="$4"
 check_idle_script="$5"
 target_dir="$HOME/.t3/runtime/versions/$version"
 # The launcher keeps every install it has ever switched to, and each release also
-# leaves its downloaded files behind. Keep the running install and the target; a
-# full disk fails the switch's database backup.
+# leaves its downloaded files behind. Keep the running install, the target, and the
+# install the service unit's launcher drop-in executes; a full disk fails the
+# switch's database backup.
+launcher="$(grep -o '/versions/[^/]*/t3' "$HOME/.config/systemd/user/t3code.service.d/channel-runtime.conf" 2>/dev/null | tail -1 | cut -d/ -f3 || true)"
 for stale_root in "$HOME/.t3/runtime/versions" "$HOME/.cache/t3code-channel"; do
   [[ -d "$stale_root" ]] || continue
   for stale in "$stale_root"/*; do
     [[ -d "$stale" ]] || continue
-    [[ "$(basename "$stale")" == "$version" || "$(basename "$stale")" == "$current" ]] && continue
+    name="$(basename "$stale")"
+    [[ "$name" == "$version" || "$name" == "$current" || "$name" == "$launcher" ]] && continue
     rm -rf -- "$stale"
   done
 done
