@@ -70,7 +70,7 @@ delib.module {
         ghostty.terminfo
         graalvmPackages.graalvm-oracle_17
         nodejs_24
-        opencode
+        local.opencode-v2
         uv
       ];
 
