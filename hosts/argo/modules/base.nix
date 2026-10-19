@@ -68,7 +68,6 @@ delib.module {
         local.stalwart-cli
         mosh
         nodejs_24
-        local.opencode-v2
         p7zip
         python3
         ripgrep

@@ -15,7 +15,6 @@
       lidarr = prev.callPackage ../../pkgs/lidarr/package.nix {};
       lidarr-gamdl-bridge = prev.callPackage ../../pkgs/lidarr-gamdl-bridge/package.nix {};
       lidarr-plugin-slskd = prev.callPackage ../../pkgs/lidarr-plugin-slskd/package.nix {};
-      opencode-v2 = prev.callPackage ../../pkgs/opencode-v2/package.nix {};
       ranni-wallpaper = prev.callPackage ../../pkgs/ranni-wallpaper/package.nix {};
       rip2 = prev.callPackage ../../pkgs/rip2/package.nix {};
       slskd = prev.callPackage ../../pkgs/slskd/package.nix {};

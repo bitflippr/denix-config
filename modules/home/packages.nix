@@ -61,7 +61,6 @@ delib.module {
     basePackages =
       (with pkgs; [
         alejandra
-        claude-code
         file
         grc
       ])

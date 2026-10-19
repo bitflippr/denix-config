@@ -37,7 +37,6 @@ delib.host {
 
     programs = {
       bun.enable = true;
-      codex-cli.enable = true;
     };
   };
 }

@@ -83,7 +83,6 @@ delib.host {
 
     programs = {
       bun.enable = true;
-      codex-cli.enable = true;
       draconisplusplus.enable = true;
       helium.enable = true;
       trmnl-fleet.enable = true;

@@ -22,7 +22,7 @@ delib.module {
   in {
     xdg.configFile."systemd/user/t3code.service.d/build-tools.conf".text = ''
       [Service]
-      Environment=PATH=${buildTools}/bin:/run/current-system/sw/bin:/etc/profiles/per-user/marshall/bin:%h/.nix-profile/bin
+      Environment=PATH=%h/.local/bin:%h/.opencode/bin:%h/.bun/bin:${buildTools}/bin:/run/current-system/sw/bin:/etc/profiles/per-user/marshall/bin:%h/.nix-profile/bin
     '';
   };
 }
