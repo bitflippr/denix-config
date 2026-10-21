@@ -21,9 +21,11 @@ delib.module {
         ROCKET_ADDRESS = "127.0.0.1";
         ROCKET_PORT = 8222;
 
-        # Preserve the current CoreOS instance's public configuration during
-        # migration. This can be tightened after the cutover is verified.
-        SIGNUPS_ALLOWED = true;
+        # vault.pupbrained.dev is reachable from the internet through the
+        # tunnel with no Access policy in front, so open registration let
+        # anyone create accounts here. The admin panel stays disabled; invite
+        # through an organization or enable it with ADMIN_TOKEN when needed.
+        SIGNUPS_ALLOWED = false;
       };
     };
 
