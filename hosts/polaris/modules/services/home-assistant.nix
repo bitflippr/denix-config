@@ -67,12 +67,11 @@ delib.module {
             # patch for 3.14.3 that doesn't fit 3.14.5, so build with
             # Cython 3.2 instead, as nixpkgs did before the patch.
             patches = [];
-            build-system =
-              map (d:
-                if d.pname or "" == "cython"
-                then super.cython_3_2
-                else d)
-              old.build-system;
+            build-system = map (d:
+              if d.pname or "" == "cython"
+              then super.cython_3_2
+              else d)
+            old.build-system;
             # 3.14.5's setup.cfg no longer has the coverage line nixpkgs edits.
             postPatch = ''
               rm -r vendor
@@ -84,7 +83,6 @@ delib.module {
             doCheck = false;
           });
         };
-      };
       };
       extraComponents = [
         "google_assistant"
