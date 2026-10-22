@@ -62,23 +62,29 @@ delib.module {
               tag = "v3.14.5";
               hash = "sha256-gSxqab8AYJ6PsMP1PYWUxQ8TJ9KtEehoekLD8ziBt+g=";
             };
-            # nixpkgs' Cython 3.3 patch (aiohttp commit fdebfa2b) doesn't
-            # apply to 3.14.5 as a diff, so make its two edits directly; the
-            # setup.cfg coverage line nixpkgs edits is gone in 3.14.5.
+            # Cython 3.3.0 crashes on the `Final[...]` annotations in
+            # aiohttp's WebSocket reader (aiohttp#13520); nixpkgs carries a
+            # patch for 3.14.3 that doesn't fit 3.14.5, so build with
+            # Cython 3.2 instead, as nixpkgs did before the patch.
             patches = [];
+            build-system =
+              map (d:
+                if d.pname or "" == "cython"
+                then super.cython_3_2
+                else d)
+              old.build-system;
+            # 3.14.5's setup.cfg no longer has the coverage line nixpkgs edits.
             postPatch = ''
               rm -r vendor
               patchShebangs tools
               touch .git  # tools/gen.py uses .git to find the project root
               substituteInPlace Makefile \
                 --replace-fail "cythonize: .install-cython" "cythonize:"
-              substituteInPlace aiohttp/_websocket/reader_py.py \
-                --replace-fail "ALLOWED_CLOSE_CODES: Final[set[int]] = " "ALLOWED_CLOSE_CODES: set[int] = " \
-                --replace-fail "        start_pos: int = 0" "        start_pos = 0"
             '';
             doCheck = false;
           });
         };
+      };
       };
       extraComponents = [
         "google_assistant"
