@@ -32,6 +32,12 @@ delib.module {
     ]) ["0.0.0.0" "[::]"];
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [port];
 
+    # systemd 262's ssh_config drop-in is included from the Nix store. Inside
+    # fleet's sandbox the store is owned by nobody, so ssh rejects the include
+    # ("Bad owner or permissions") and every fleet command to another host
+    # fails. Nothing here addresses machines or VMs through systemd-ssh-proxy.
+    programs.ssh.systemd-ssh-proxy.enable = false;
+
     # Tailscale drops packets from these ranges on any other interface.
     programs.fleet.isolation.sshKeys = lib.mapAttrs (_: key: {
       inherit key;
