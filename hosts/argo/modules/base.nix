@@ -67,7 +67,7 @@ delib.module {
         lldb
         local.stalwart-cli
         mosh
-        nodejs_24
+        local.nodejs_24
         p7zip
         python3
         ripgrep

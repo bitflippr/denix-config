@@ -1219,6 +1219,23 @@
         "type": "github"
       }
     },
+    "nixpkgs-dotnet": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792599351,
+        "narHash": "sha256-KPsnqDEgnEbFkBHwpDinMhwkbIAOUeaM01Y0FQ1MOVY=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "659c15701f113dea6828bf1953d2b3dc44e34550",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "659c15701f113dea6828bf1953d2b3dc44e34550",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1754184128,
@@ -1283,11 +1300,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1791956154,
-        "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
+        "lastModified": 1792502884,
+        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
         "type": "github"
       },
       "original": {
@@ -1554,6 +1571,7 @@
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_4",
+        "nixpkgs-dotnet": "nixpkgs-dotnet",
         "nixvim": "nixvim",
         "replay-fish": "replay-fish",
         "snappy-switcher": "snappy-switcher",

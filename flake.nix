@@ -5,6 +5,13 @@
     cua.url = "github:trycua/cua/cua-driver-rs-v0.21.0";
     nix-colors.url = "github:Misterio77/nix-colors";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    # nixpkgs PR #574338: .NET 10.0.13 (October 2026 servicing, Kestrel request
+    # smuggling fixes). Drop once nixos-unstable carries dotnet_10 10.0.13.
+    nixpkgs-dotnet = {
+      url = "github:NixOS/nixpkgs/659c15701f113dea6828bf1953d2b3dc44e34550";
+      flake = false;
+    };
     nixvim.url = "github:bitflippr/nixvim-new";
 
     bang-bang = {

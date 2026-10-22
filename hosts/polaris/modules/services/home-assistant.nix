@@ -1,6 +1,7 @@
 {
   config,
   delib,
+  pkgs,
   ...
 }:
 delib.module {
@@ -50,6 +51,21 @@ delib.module {
 
     services.home-assistant = {
       enable = true;
+      # aiohttp 3.14.5 is what 2026.10 pins upstream; nixpkgs still ships
+      # 3.14.3, which has the October 19-20 DoS advisories. Drop once nixpkgs
+      # catches up.
+      package = pkgs.home-assistant.override {
+        packageOverrides = _: super: {
+          aiohttp = super.aiohttp.overridePythonAttrs (old: {
+            version = "3.14.5";
+            src = old.src.override {
+              tag = "v3.14.5";
+              hash = "sha256-gSxqab8AYJ6PsMP1PYWUxQ8TJ9KtEehoekLD8ziBt+g=";
+            };
+            doCheck = false;
+          });
+        };
+      };
       extraComponents = [
         "google_assistant"
         "mqtt"

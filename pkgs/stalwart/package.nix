@@ -8,11 +8,11 @@
 # nixpkgs is still on 0.15, and Stalwart's data can't move back a minor version.
 stdenv.mkDerivation rec {
   pname = "stalwart";
-  version = "0.16.24";
+  version = "0.16.27";
 
   src = fetchurl {
     url = "https://github.com/stalwartlabs/stalwart/releases/download/v${version}/stalwart-x86_64-unknown-linux-gnu.tar.gz";
-    hash = "sha256-UTkmkdSrZ4ZOhK9SFSd9vUoGn/r5oM65SgdGLiJIeEM=";
+    hash = "sha256-PUVIBT5xMM3GKIE04orsxQBPIlScxSodvaDKSP8LMBo=";
   };
 
   sourceRoot = ".";

@@ -69,7 +69,7 @@ delib.module {
         ffmpeg
         ghostty.terminfo
         graalvmPackages.graalvm-oracle_17
-        nodejs_24
+        local.nodejs_24
         uv
       ];
 

@@ -22,6 +22,7 @@ delib.module {
       bluesky-pds = {
         enable = true;
         pdsadmin.enable = true;
+        package = pkgs.bluesky-pds.override {nodejs_22 = pkgs.local.nodejs_22;};
         environmentFiles = [config.sops.secrets.bsky_pds.path];
 
         settings = {
@@ -49,7 +50,7 @@ delib.module {
 
       zipline = {
         enable = true;
-        package = pkgs.zipline.overrideAttrs (_: {
+        package = (pkgs.zipline.override {nodejs_24 = pkgs.local.nodejs_24;}).overrideAttrs (_: {
           buildPhase = ''
             runHook preBuild
             pnpm build
