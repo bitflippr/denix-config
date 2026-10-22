@@ -62,8 +62,16 @@ delib.module {
               tag = "v3.14.5";
               hash = "sha256-gSxqab8AYJ6PsMP1PYWUxQ8TJ9KtEehoekLD8ziBt+g=";
             };
-            # nixpkgs' Cython 3.3 compatibility patch is already in 3.14.5.
+            # nixpkgs' Cython 3.3 compatibility patch is already in 3.14.5,
+            # and its setup.cfg no longer has the coverage line nixpkgs edits.
             patches = [];
+            postPatch = ''
+              rm -r vendor
+              patchShebangs tools
+              touch .git  # tools/gen.py uses .git to find the project root
+              substituteInPlace Makefile \
+                --replace-fail "cythonize: .install-cython" "cythonize:"
+            '';
             doCheck = false;
           });
         };
