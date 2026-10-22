@@ -1263,6 +1263,11 @@ in
             after = ["mnt.mount"];
             requires = ["mnt.mount"];
 
+            # .NET 10.0.13 keeps named-mutex files under $XDG_RUNTIME_DIR
+            # (falling back to HOME, which is /var/empty here), and slskd
+            # takes a singleton mutex at startup.
+            environment.XDG_RUNTIME_DIR = "/run/slskd";
+
             serviceConfig = {
               ExecStart = pkgs.lib.mkForce "${pkgs.local.slskd}/bin/slskd --app-dir /var/lib/slskd --config ${config.sops.templates."slskd.yml".path}";
               # The module mounts shares read-only, but slskd-organize files
