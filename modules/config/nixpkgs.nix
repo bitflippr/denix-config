@@ -23,8 +23,10 @@
       nodejs_22 = nodejsPin prev.nodejs_22 "22.23.4" "sha256-e5rcgtYS0KKoY9lsRt4iklUuJQzuUZVuu+AUbEKqyuk=";
 
       # .NET 10.0.13 runtimes (Kestrel request smuggling) from nixpkgs PR
-      # #574338; the SDK stays on the pinned nixpkgs, only the runtimes that
-      # get wrapped into services change.
+      # #574338. The SDK stays on the pinned nixpkgs; only the runtimes that
+      # get wrapped into services change, and they come from Microsoft's
+      # prebuilt tarballs (the `-bin` variants) rather than the VMR source
+      # build, which Hydra hasn't cached for that commit.
       dotnetCorePackages = let
         october =
           (import inputs.nixpkgs-dotnet {
@@ -34,7 +36,8 @@
       in
         prev.dotnetCorePackages
         // {
-          inherit (october) aspnetcore_10_0 runtime_10_0;
+          aspnetcore_10_0 = october.aspnetcore_10_0-bin;
+          runtime_10_0 = october.runtime_10_0-bin;
         };
 
       wrapper-v2 = prev.callPackage ../../pkgs/wrapper-v2/package.nix {};

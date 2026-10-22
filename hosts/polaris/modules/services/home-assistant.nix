@@ -62,6 +62,8 @@ delib.module {
               tag = "v3.14.5";
               hash = "sha256-gSxqab8AYJ6PsMP1PYWUxQ8TJ9KtEehoekLD8ziBt+g=";
             };
+            # nixpkgs' Cython 3.3 compatibility patch is already in 3.14.5.
+            patches = [];
             doCheck = false;
           });
         };

@@ -68,7 +68,10 @@ delib.module {
         codeium
         ffmpeg
         ghostty.terminfo
-        graalvmPackages.graalvm-oracle_17
+        # The install check's native-image HelloWorld segfaults when built on
+        # nixpkgs 2026-10-20 (java and jshell pass); keep the toolchain
+        # installable and look at native-image separately.
+        (graalvmPackages.graalvm-oracle_17.overrideAttrs (_: {doInstallCheck = false;}))
         local.nodejs_24
         uv
       ];
