@@ -56,6 +56,15 @@ delib.module {
       # catches up.
       package = pkgs.home-assistant.override {
         packageOverrides = _: super: {
+          # aiohttp 3.14.5 needs yarl >= 1.25.1, which 2026.10.2 pins too.
+          yarl = super.yarl.overridePythonAttrs (old: {
+            version = "1.25.1";
+            src = old.src.override {
+              tag = "v1.25.1";
+              hash = "sha256-cQsVglP3OqaQW95OYPlbWCFTs5p6L5wOzx7QCIqqJ9U=";
+            };
+            doCheck = false;
+          });
           aiohttp = super.aiohttp.overridePythonAttrs (old: {
             version = "3.14.5";
             src = old.src.override {
