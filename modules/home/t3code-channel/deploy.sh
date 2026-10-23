@@ -74,7 +74,6 @@ if [[ ! -f "$server_tgz" ]]; then
 fi
 
 deployment_failed=0
-deployment_busy=0
 deploy_polaris() {
   local polaris_cache=".cache/t3code-channel/$version"
   local polaris_current
@@ -82,17 +81,16 @@ deploy_polaris() {
   ssh -i "$polaris_key" -p "$polaris_port" -o IdentitiesOnly=yes -o BatchMode=yes \
     "$polaris_host" "mkdir -p '$polaris_cache' && chmod -R u+w '$polaris_cache'" || return $?
   scp -i "$polaris_key" -P "$polaris_port" -o IdentitiesOnly=yes -o BatchMode=yes \
-    "$linux_archive" "$script_dir/switch-service.mjs" "$script_dir/check-idle.mjs" "$script_dir/renumbering.mjs" "$polaris_host:$polaris_cache/" || return $?
+    "$linux_archive" "$script_dir/switch-service.mjs" "$script_dir/active-database.mjs" "$script_dir/renumbering.mjs" "$polaris_host:$polaris_cache/" || return $?
   polaris_current="$(ssh -i "$polaris_key" -p "$polaris_port" -o IdentitiesOnly=yes -o BatchMode=yes \
     "$polaris_host" "node -e 'const s=require(\"./.t3/runtime/service-state.json\"); process.stdout.write(s.activeVersion)'")" || return $?
   ssh -i "$polaris_key" -p "$polaris_port" -o IdentitiesOnly=yes -o BatchMode=yes \
-    "$polaris_host" bash -s -- "$version" "$polaris_current" "$polaris_cache/$(basename "$linux_archive")" "$polaris_cache/switch-service.mjs" "$polaris_cache/check-idle.mjs" <<'POLARIS'
+    "$polaris_host" bash -s -- "$version" "$polaris_current" "$polaris_cache/$(basename "$linux_archive")" "$polaris_cache/switch-service.mjs" <<'POLARIS'
 set -euo pipefail
 version="$1"
 current="$2"
 server_tgz="$3"
 switch_script="$4"
-check_idle_script="$5"
 target_dir="$HOME/.t3/runtime/versions/$version"
 # The launcher keeps every install it has ever switched to, and each release also
 # leaves its downloaded files behind. Keep the running install, the target, and the
@@ -127,10 +125,7 @@ set +e
 deploy_polaris
 polaris_status=$?
 set -e
-if (( polaris_status == 75 )); then
-  log "Polaris has active turns; deferring its service switch."
-  deployment_busy=1
-elif (( polaris_status != 0 )); then
+if (( polaris_status != 0 )); then
   log "Polaris deployment failed with status ${polaris_status}; continuing with Navis, Canis, and Builder."
   deployment_failed=1
 fi
@@ -147,13 +142,13 @@ deploy_canis() {
   )
 
   ssh "${ssh_options[@]}" "$canis_host" "mkdir -p '$canis_cache' && chmod -R u+w '$canis_cache'" || return $?
-  scp "${ssh_options[@]}" "$server_tgz" "$script_dir/check-idle.mjs" "$canis_host:$canis_cache/" || return $?
+  scp "${ssh_options[@]}" "$server_tgz" "$script_dir/active-database.mjs" "$canis_host:$canis_cache/" || return $?
   ssh "${ssh_options[@]}" "$canis_host" bash -s -- \
-    "$version" "$canis_cache/$(basename "$server_tgz")" "$canis_cache/check-idle.mjs" <<'CANIS'
+    "$version" "$canis_cache/$(basename "$server_tgz")" "$canis_cache/active-database.mjs" <<'CANIS'
 set -euo pipefail
 version="$1"
 server_tgz="$2"
-check_idle_script="$3"
+active_database_script="$3"
 install_root="$HOME/.local/share/t3code"
 target_dir="$install_root/$version"
 plist="$HOME/Library/LaunchAgents/codes.t3.server.plist"
@@ -189,8 +184,7 @@ if [[ "$current_entry" == "$entry" ]]; then
   exit 0
 fi
 
-database="$(node "$check_idle_script" "$database" --database-path)"
-node "$check_idle_script" "$database"
+database="$(node "$active_database_script" "$database")"
 cp "$plist" "$backup"
 /usr/libexec/PlistBuddy -c "Set :ProgramArguments:1 $entry" "$plist"
 if ! launchctl bootout "gui/$(id -u)/codes.t3.server"; then
@@ -280,10 +274,7 @@ set +e
 deploy_canis
 canis_status=$?
 set -e
-if (( canis_status == 75 )); then
-  log "Canis has active turns; deferring its service switch."
-  deployment_busy=1
-elif (( canis_status != 0 )); then
+if (( canis_status != 0 )); then
   log "Canis deployment failed with status ${canis_status}; continuing with Navis and Builder."
   deployment_failed=1
 fi
@@ -322,23 +313,15 @@ if [[ "$builder_current" != "$version" ]]; then
   node "$script_dir/switch-service.mjs" "$builder_base" "$builder_current" "$version" t3code.service --allow-personal-renumbering
   builder_status=$?
   set -e
-  if (( builder_status == 75 )); then
-    log "Builder has active turns; deferring its service switch."
-    deployment_busy=1
-  elif (( builder_status != 0 )); then
+  if (( builder_status != 0 )); then
     log "Builder deployment failed with status ${builder_status}."
     deployment_failed=1
   fi
 fi
 
 if (( deployment_failed != 0 )); then
-  log "At least one fleet target failed; deferred busy targets remain pending."
+  log "At least one fleet target failed."
   exit 1
-fi
-
-if (( deployment_busy != 0 )); then
-  log "The available machines were updated; busy fleet targets remain pending."
-  exit 75
 fi
 
 log "Builder, Polaris, and Canis are on ${version}; the Navis pin is published."

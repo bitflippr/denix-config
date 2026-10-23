@@ -134,18 +134,7 @@ mark_deployment_complete() {
 }
 
 run_deployment() {
-  local deployment_status
-  set +e
   "$deploy_script" "$1"
-  deployment_status=$?
-  set -e
-  if (( deployment_status == 75 )); then
-    current_stage="deploying fleet"
-    write_health "updating" "deployment-busy:$1" "Waiting for active turns to finish before deploying the pending release."
-    log "Fleet deployment deferred because active turns are still running."
-    exit 0
-  fi
-  return "$deployment_status"
 }
 
 require_command() {
