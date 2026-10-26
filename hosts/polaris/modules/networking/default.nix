@@ -35,6 +35,7 @@ in
           extraInputRules = ''
             ip saddr ${lanIPv4} tcp dport { 22, 139, 445, 1883, 2022, 8096, 8123, 8443, 8920 } accept
             iifname "eno1" ip saddr ${lanIPv4} tcp dport 8686 accept
+            iifname "eno1" ip saddr ${lanIPv4} tcp dport 8737 accept
             ip saddr ${lanIPv4} udp dport { 137, 138, 1900, 7359, 60000-61000 } accept
           '';
 

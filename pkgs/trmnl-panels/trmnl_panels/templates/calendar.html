@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block style %}
+.row { position: absolute; left: 0; width: 732px; height: 50px; display: flex; align-items: center; font-size: 28px; padding: 0 18px; }
+.row .t { width: 144px; font-weight: 700; flex: none; }
+.row .title { flex: 1; font-weight: 500; }
+.row .note { flex: none; font-size: 22px; font-weight: 500; margin-left: 16px; }
+.row.hi { background: #000; color: #fff; border-radius: 6px; }
+.row.hi .title { font-weight: 600; }
+.foot { position: absolute; left: 18px; top: 160px; width: 714px; font-size: 20px; font-weight: 500; }
+.empty { position: absolute; left: 18px; top: 22px; font-size: 40px; font-weight: 700; }
+.later { position: absolute; left: 18px; top: 92px; width: 714px; font-size: 28px; font-weight: 500; }
+{% endblock %}
+{% block panel %}
+{% if events %}
+  {% for e in events[:3] %}
+  <div class="row{{ ' hi' if loop.first and e.highlight }}" style="top: {{ 2 + 52 * loop.index0 }}px">
+    <div class="t">{{ e.time_label }}</div>
+    <div class="title nowrap">{{ e.title }}</div>
+    {% if e.note %}<div class="note">{{ e.note }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  <div class="foot nowrap">{{ footer }}</div>
+{% else %}
+  <div class="empty">{{ empty }}</div>
+  <div class="later nowrap">{{ footer }}</div>
+{% endif %}
+{% endblock %}

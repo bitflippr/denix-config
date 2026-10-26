@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+@font-face { font-family: "Inter Tight"; src: url(data:font/ttf;base64,{{ font_b64 }}) format("truetype"); font-weight: 100 900; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 800px; height: 480px; background: #fff; color: #000; font-family: "Inter Tight"; overflow: hidden; }
+.abs { position: absolute; }
+.nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The top-left 510x232 belongs to the clock: the device draws the time and date there. */
+.wx-icon { left: 526px; top: 50px; width: 92px; height: 92px; }
+.wx-icon svg { width: 100%; height: 100%; display: block; }
+.wx-temp { right: 34px; top: 60px; font-size: 64px; font-weight: 800; line-height: 64px; }
+.wx-line { right: 34px; width: 250px; text-align: right; font-size: 22px; font-weight: 500; line-height: 26px; }
+.rule { left: 34px; top: 236px; width: 732px; height: 4px; background: #000; }
+.label { left: 34px; top: 262px; font-size: 20px; font-weight: 800; letter-spacing: 2px; line-height: 20px; }
+.dots { right: 34px; top: 264px; display: flex; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #000; }
+.dot.on { background: #000; }
+.panel { left: 34px; top: 294px; width: 732px; height: 186px; }
+{% block style %}{% endblock %}
+</style></head><body>
+{% if weather %}
+<div class="abs wx-icon">{{ icon(weather.icon) }}</div>
+<div class="abs wx-temp">{{ weather.temp }}°</div>
+<div class="abs wx-line nowrap" style="top: 135px">{{ weather.label }} · H {{ weather.high }} L {{ weather.low }}</div>
+<div class="abs wx-line nowrap" style="top: 165px">{{ weather.note }}</div>
+{% endif %}
+<div class="abs rule"></div>
+<div class="abs label">{{ label }}</div>
+<div class="abs dots">{% for i in range(count) %}<div class="dot{{ ' on' if i == index }}"></div>{% endfor %}</div>
+<div class="abs panel">{% block panel %}{% endblock %}</div>
+</body></html>

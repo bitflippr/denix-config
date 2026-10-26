@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block style %}
+.col { position: absolute; top: 6px; width: 180px; }
+.sep { position: absolute; top: 6px; width: 2px; height: 160px; background: #000; }
+.name { font-size: 38px; font-weight: 800; letter-spacing: -1px; line-height: 40px; }
+.line { font-size: 20px; font-weight: 500; line-height: 24px; margin-top: 6px; }
+.bar { width: 160px; height: 12px; border: 2.5px solid #000; margin-top: 14px; }
+.bar div { height: 100%; background: #000; }
+.free { font-size: 20px; font-weight: 600; line-height: 24px; margin-top: 12px; }
+{% endblock %}
+{% block panel %}
+{% for t in tiles %}
+  {% if not loop.first %}<div class="sep" style="left: {{ 200 * loop.index0 - 21 }}px"></div>{% endif %}
+  <div class="col" style="left: {{ 200 * loop.index0 }}px">
+    <div class="name">{{ t.name }}</div>
+    <div class="line nowrap">{{ t.status }}</div>
+    <div class="bar">{% if t.used_frac is not none %}<div style="width: {{ (t.used_frac * 100)|round(1) }}%"></div>{% endif %}</div>
+    <div class="free nowrap">{{ t.free or "Disk unknown" }}</div>
+    <div class="line nowrap">{{ t.detail }}</div>
+  </div>
+{% endfor %}
+{% endblock %}

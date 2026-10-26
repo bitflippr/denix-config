@@ -55,6 +55,7 @@
       slskd = prev.callPackage ../../pkgs/slskd/package.nix {inherit dotnetCorePackages;};
       stalwart = prev.callPackage ../../pkgs/stalwart/package.nix {};
       stalwart-cli = prev.callPackage ../../pkgs/stalwart-cli/package.nix {};
+      trmnl-panels = prev.callPackage ../../pkgs/trmnl-panels/package.nix {};
       visor-bootmanager = prev.callPackage ../../pkgs/visor-bootmanager/package.nix {};
     };
   };
