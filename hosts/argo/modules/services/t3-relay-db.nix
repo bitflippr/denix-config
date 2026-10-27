@@ -8,6 +8,8 @@
   # password) and tunnel-token (the Cloudflare Tunnel that publishes Postgres
   # to the relay's Hyperdrive, behind a Cloudflare Access service token).
   stateDir = "/var/lib/t3-relay";
+  # 5432 is taken by a project database run from a fleet job.
+  port = 5433;
   postgres = config.services.postgresql.package;
 in
   # Database for the fork's self-hosted T3 Connect relay. Postgres listens on
@@ -19,6 +21,7 @@ in
       services.postgresql = {
         enable = true;
         package = pkgs.postgresql_17;
+        settings.port = port;
         ensureDatabases = ["t3relay"];
         ensureUsers = [
           {
@@ -50,7 +53,7 @@ in
         # Through the environment, so the password stays out of argv.
         script = ''
           T3RELAY_PASSWORD="$(< "$CREDENTIALS_DIRECTORY/db-password")" \
-            ${postgres}/bin/psql -v ON_ERROR_STOP=1 -d postgres <<'SQL'
+            ${postgres}/bin/psql -p ${toString port} -v ON_ERROR_STOP=1 -d postgres <<'SQL'
           \getenv password T3RELAY_PASSWORD
           ALTER ROLE t3relay PASSWORD :'password';
           SQL
