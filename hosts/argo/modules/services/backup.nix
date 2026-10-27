@@ -161,6 +161,12 @@ in
           fi
           trap - EXIT
 
+          # The T3 relay's Postgres database.
+          if "$systemctl" is-active --quiet postgresql.service; then
+            ${pkgs.util-linux}/bin/runuser -u postgres -- \
+              ${config.services.postgresql.package}/bin/pg_dump -Fc t3relay > "$stage/t3-relay.pgdump"
+          fi
+
           # T3's databases, copied consistently while it keeps running.
           "$install" -d -m 0700 "$stage/t3"
           for db in ${home}/.t3/userdata/*.sqlite; do
