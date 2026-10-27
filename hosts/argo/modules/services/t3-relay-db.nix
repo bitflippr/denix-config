@@ -10,6 +10,7 @@
   stateDir = "/var/lib/t3-relay";
   # 5432 is taken by a project database run from a fleet job.
   port = 5433;
+  tlsDir = "/var/lib/t3-relay-db-tls";
   postgres = config.services.postgresql.package;
 in
   # Database for the fork's self-hosted T3 Connect relay. Postgres listens on
@@ -21,7 +22,14 @@ in
       services.postgresql = {
         enable = true;
         package = pkgs.postgresql_17;
-        settings.port = port;
+        settings = {
+          inherit port;
+          # Hyperdrive insists on TLS, even through the tunnel; it does not
+          # check the issuer, so a self-signed certificate is enough.
+          ssl = true;
+          ssl_cert_file = "${tlsDir}/server.crt";
+          ssl_key_file = "${tlsDir}/server.key";
+        };
         ensureDatabases = ["t3relay"];
         ensureUsers = [
           {
@@ -36,6 +44,25 @@ in
       };
 
       systemd.tmpfiles.rules = ["d ${stateDir} 0700 root root -"];
+
+      systemd.services.t3-relay-db-tls = {
+        description = "Self-signed TLS certificate for the T3 relay Postgres";
+        wantedBy = ["postgresql.service"];
+        before = ["postgresql.service"];
+        unitConfig.ConditionPathExists = "!${tlsDir}/server.key";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "postgres";
+          StateDirectory = "t3-relay-db-tls";
+          StateDirectoryMode = "0700";
+          UMask = "0077";
+        };
+        script = ''
+          ${pkgs.openssl}/bin/openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 3650 \
+            -subj /CN=relay-db.skulldogged.dev \
+            -keyout ${tlsDir}/server.key -out ${tlsDir}/server.crt
+        '';
+      };
 
       # ensureUsers creates the role without a password.
       systemd.services.t3-relay-db-password = {
