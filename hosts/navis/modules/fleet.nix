@@ -10,7 +10,16 @@ delib.module {
     programs.fleet = {
       enable = true;
       # Other hosts' agents arrive as system.fleetSsh sets up.
-      isolation.enable = true;
+      isolation = {
+        enable = true;
+        # The sandbox hides key files but not agent sockets. The TPM agent
+        # holds Mars's Polaris key, and `Host polaris` names it directly.
+        hide = [
+          "/run/user/1000/ssh-agent"
+          "/run/user/1000/ssh-tpm-agent.sock"
+          "/run/user/1000/keyring"
+        ];
+      };
       broker = {
         enable = true;
         users = ["marshall"];
