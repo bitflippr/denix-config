@@ -100,6 +100,13 @@ delib.module {
       };
     };
 
+    # This host has no swap partition; zram is its only swap. Logical
+    # capacity, allocated/compressed on demand, not reserved RAM.
+    zramSwap = {
+      enable = true;
+      memoryPercent = 100;
+    };
+
     hardware.logitech.wireless = {
       enable = true;
     };

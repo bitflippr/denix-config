@@ -1,100 +1,188 @@
-diff --git a/src/app/creation.rs b/src/app/creation.rs
---- a/src/app/creation.rs
-+++ b/src/app/creation.rs
-@@ -97,6 +97,30 @@ impl App {
-     }
- 
-     pub(super) fn begin_tui_workspace_create(&mut self, request_id: &'static str) {
-+        if self.state.active.is_some() && !self.state.new_workspace_command.is_empty() {
-+            let command = self.state.new_workspace_command.clone();
-+            let previous_toast = self.state.toast.clone();
-+            let (env, cwd) = self.custom_command_env();
-+            let geometry = crate::app::popup::PopupGeometry {
-+                width: Some(crate::popup_size::PopupSize::Percent(70)),
-+                height: Some(crate::popup_size::PopupSize::Percent(70)),
-+            };
-+            match self.spawn_popup_shell_command(&command, cwd, env, geometry) {
-+                Ok(()) => return,
-+                Err(err) => {
-+                    self.state.toast = Some(crate::app::state::ToastNotification {
-+                        kind: crate::app::state::ToastKind::NeedsAttention,
-+                        title: "new workspace picker failed".to_string(),
-+                        context: err.to_string(),
-+                        position: None,
-+                        target: None,
-+                    });
-+                    self.sync_toast_deadline(previous_toast);
-+                    return;
-+                }
-+            }
-+        }
-+
-         if self.state.prompt_new_workspace_name {
-             let follow_cwd = self.workspace_creation_source().and_then(|ws_idx| {
-                 self.focused_pane_cwd_in_workspace(ws_idx)
-diff --git a/src/app/mod.rs b/src/app/mod.rs
---- a/src/app/mod.rs
-+++ b/src/app/mod.rs
-@@ -648,6 +648,7 @@ impl App {
-             confirm_close: config.ui.confirm_close,
-             prompt_new_tab_name: config.ui.prompt_new_tab_name,
-             prompt_new_workspace_name: config.ui.prompt_new_workspace_name,
-+            new_workspace_command: config.ui.new_workspace_command.clone(),
-             pane_borders: config.ui.pane_borders,
-             pane_outer_borders: config.ui.pane_outer_borders,
-             pane_scrollbars: config.ui.pane_scrollbars,
-@@ -1493,6 +1494,7 @@ impl App {
-                 self.state.confirm_close = config.ui.confirm_close;
-                 self.state.prompt_new_tab_name = config.ui.prompt_new_tab_name;
-                 self.state.prompt_new_workspace_name = config.ui.prompt_new_workspace_name;
-+                self.state.new_workspace_command = config.ui.new_workspace_command.clone();
-                 self.state.pane_borders = config.ui.pane_borders;
-                 self.state.pane_outer_borders = config.ui.pane_outer_borders;
-                 self.state.pane_scrollbars = config.ui.pane_scrollbars;
-diff --git a/src/app/state.rs b/src/app/state.rs
---- a/src/app/state.rs
-+++ b/src/app/state.rs
-@@ -1482,6 +1482,7 @@ pub struct AppState {
-     pub confirm_close: bool,
-     pub prompt_new_tab_name: bool,
-     pub prompt_new_workspace_name: bool,
-+    pub new_workspace_command: String,
-     pub pane_borders: bool,
-     pub pane_outer_borders: bool,
-     pub pane_scrollbars: bool,
-@@ -1873,6 +1874,7 @@ impl AppState {
-             confirm_close: true,
-             prompt_new_tab_name: true,
-             prompt_new_workspace_name: false,
-+            new_workspace_command: String::new(),
-             pane_borders: true,
-             pane_outer_borders: true,
-             pane_scrollbars: true,
-diff --git a/src/config/model.rs b/src/config/model.rs
 --- a/src/config/model.rs
 +++ b/src/config/model.rs
-@@ -877,6 +877,9 @@ pub struct UiConfig {
+@@ -966,6 +966,9 @@
      pub prompt_new_tab_name: bool,
      /// Ask for a workspace name before interactive creation. Default: false.
      pub prompt_new_workspace_name: bool,
 +    /// Optional shell command that replaces interactive workspace creation.
 +    /// The command runs in a popup for keyboard, sidebar, and mobile actions.
 +    pub new_workspace_command: String,
-     /// Draw borders around split panes. Default: true.
-     pub pane_borders: bool,
-     /// Draw borders along the outside edge of the pane area. Default: true.
-@@ -1116,6 +1119,7 @@ impl Default for UiConfig {
+     /// Draw borders around split panes. auto draws them only for split panes,
+     /// always also frames a lone pane (only while pane_outer_borders is
+     /// enabled, since every edge of a lone pane is an outer edge), off
+@@ -1213,6 +1216,7 @@
              confirm_close: true,
              prompt_new_tab_name: true,
              prompt_new_workspace_name: false,
 +            new_workspace_command: String::new(),
-             pane_borders: true,
+             pane_borders: PaneBordersConfig::Auto,
              pane_outer_borders: true,
              pane_scrollbars: true,
-diff --git a/src/main.rs b/src/main.rs
+--- a/src/config/keybinds.rs
++++ b/src/config/keybinds.rs
+@@ -13,6 +13,14 @@
+ /// Built-in prefix used when `keys.prefix` is unset or invalid.
+ pub(crate) const DEFAULT_PREFIX: KeyCombo = (KeyCode::Char('b'), KeyModifiers::CONTROL);
+ 
++/// Reserved label for the custom command synthesized from
++/// `ui.new_workspace_command`. It carries no key of its own, so the client
++/// finds it in the endpoint command manifest by this label instead.
++pub const NEW_WORKSPACE_COMMAND_LABEL: &str = "__new_workspace_command";
++
++/// Popup geometry for the synthesized `ui.new_workspace_command`.
++const NEW_WORKSPACE_COMMAND_SIZE: PopupSize = PopupSize::Percent(70);
++
+ #[derive(Debug, Clone)]
+ pub struct LiveKeybindConfig {
+     /// Every configured prefix key. The first entry is the primary prefix used
+@@ -855,6 +863,29 @@
+             height,
+         });
+     }
++
++    append_new_workspace_command(config, keybinds);
++}
++
++/// `ui.new_workspace_command` replaces interactive workspace creation with a
++/// popup. It is registered as a keyless custom command so the endpoint owns
++/// execution and every New Workspace entry point - keybinding, sidebar, and
++/// mobile - reaches the same picker through the command manifest.
++fn append_new_workspace_command(config: &Config, keybinds: &mut Keybinds) {
++    let command = config.ui.new_workspace_command.trim();
++    if command.is_empty() {
++        return;
++    }
++
++    keybinds.custom_commands.push(CustomCommandKeybind {
++        bindings: ActionKeybinds::default(),
++        label: NEW_WORKSPACE_COMMAND_LABEL.to_string(),
++        command: command.to_string(),
++        action: CustomCommandAction::Popup,
++        description: Some("new workspace picker".to_string()),
++        width: Some(NEW_WORKSPACE_COMMAND_SIZE),
++        height: Some(NEW_WORKSPACE_COMMAND_SIZE),
++    });
+ }
+ 
+ fn parse_action_bindings(
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -19,7 +19,7 @@
+     keybinds::{
+         format_prefix_combos, normalize_key_combo, terminal_key_matches_combo, ActionKeybinds,
+         BindingConfig, CommandKeybindConfig, CustomCommandAction, CustomCommandKeybind,
+-        IndexedKeybind, KeyCombo, Keybinds, LiveKeybindConfig,
++        IndexedKeybind, KeyCombo, Keybinds, LiveKeybindConfig, NEW_WORKSPACE_COMMAND_LABEL,
+     },
+     model::{
+         validated_sidebar_bounds, AgentPanelSortConfig, Config, ConfigReloadReport,
+--- a/src/input/keybind_help.rs
++++ b/src/input/keybind_help.rs
+@@ -206,24 +206,26 @@
+         ),
+     ];
+ 
+-    if !keybinds.custom_commands.is_empty() {
+-        groups.push((
+-            "custom",
+-            keybinds
+-                .custom_commands
+-                .iter()
+-                .map(|binding| {
+-                    (
+-                        binding.label.clone(),
+-                        binding
+-                            .description
+-                            .clone()
+-                            .map(Cow::Owned)
+-                            .unwrap_or(Cow::Borrowed("custom command")),
+-                    )
+-                })
+-                .collect(),
+-        ));
++    // The command synthesized from ui.new_workspace_command is reached through
++    // the New Workspace action rather than a key of its own, so it has no
++    // binding to list here.
++    let custom: Vec<_> = keybinds
++        .custom_commands
++        .iter()
++        .filter(|binding| binding.label != crate::config::NEW_WORKSPACE_COMMAND_LABEL)
++        .map(|binding| {
++            (
++                binding.label.clone(),
++                binding
++                    .description
++                    .clone()
++                    .map(Cow::Owned)
++                    .unwrap_or(Cow::Borrowed("custom command")),
++            )
++        })
++        .collect();
++    if !custom.is_empty() {
++        groups.push(("custom", custom));
+     }
+     groups
+ }
+--- a/src/client/shell/actions.rs
++++ b/src/client/shell/actions.rs
+@@ -81,6 +81,10 @@
+                     return;
+                 }
+                 if action == crate::input::KeybindAction::NewWorkspace {
++                    if self.invoke_new_workspace_command(outcome) {
++                        outcome.repaint = true;
++                        return;
++                    }
+                     if self.config.prompt_new_workspace_name {
+                         self.open_new_workspace_overlay();
+                     } else {
+@@ -352,6 +356,43 @@
+         true
+     }
+ 
++    /// Invoke the popup synthesized from `ui.new_workspace_command` instead of
++    /// creating a workspace directly. Returns false when no such command is
++    /// configured, or when nothing is focused yet, so the caller falls back to
++    /// the built-in creation path.
++    pub(super) fn invoke_new_workspace_command(&mut self, outcome: &mut ClientShellInput) -> bool {
++        let Some(params) = self.snapshot.as_deref().and_then(|snapshot| {
++            let command = snapshot.commands.iter().find(|candidate| {
++                candidate.binding_label == crate::config::NEW_WORKSPACE_COMMAND_LABEL
++                    && candidate.action == crate::protocol::ClientShellCommandAction::Popup
++            })?;
++            // A popup is drawn over the focused workspace, so the first
++            // workspace of a session is still created without the picker.
++            snapshot.focused_workspace_id.as_ref()?;
++            Some(crate::api::schema::CommandInvokeParams {
++                command_id: command.command_id.clone(),
++                workspace_id: snapshot.focused_workspace_id.clone(),
++                tab_id: snapshot.focused_tab_id.clone(),
++                pane_id: snapshot.focused_pane_id.clone(),
++                selection: None,
++            })
++        }) else {
++            return false;
++        };
++
++        self.popup_pending = true;
++        self.popup_pending_deadline = None;
++        if !self.push_endpoint_method_with_kind(
++            crate::api::schema::Method::CommandInvoke(params),
++            PendingEndpointKind::PopupCommand,
++            outcome,
++        ) {
++            self.popup_pending = false;
++            return false;
++        }
++        true
++    }
++
+     pub(super) fn push_endpoint_method_with_kind(
+         &mut self,
+         method: crate::api::schema::Method,
 --- a/src/main.rs
 +++ b/src/main.rs
-@@ -316,6 +316,10 @@ const DEFAULT_CONFIG: &str = r##"# herdr configuration
+@@ -291,6 +291,10 @@
  # Ask for a workspace name before interactive creation.
  # prompt_new_workspace_name = false
  
@@ -103,5 +191,5 @@ diff --git a/src/main.rs b/src/main.rs
 +# new_workspace_command = ""
 +
  # Draw borders around split panes.
- # pane_borders = true
- 
+ # "auto" draws them only for split panes, "always" also frames a lone pane
+ # (only while pane_outer_borders is enabled), "off" disables them.

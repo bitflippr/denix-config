@@ -38,5 +38,14 @@ delib.module {
           open = true;
         };
       };
+
+    # A driver upgrade swaps in new userspace libraries while the previous
+    # kernel module is still loaded, so regenerating the CDI spec during
+    # activation can only fail with "Driver/library version mismatch". Keep the
+    # spec from the running generation and let the unit regenerate it at boot,
+    # where the module and the libraries match again.
+    systemd.services = lib.mkIf myconfig.host.isDesktop {
+      nvidia-container-toolkit-cdi-generator.restartIfChanged = false;
+    };
   };
 }

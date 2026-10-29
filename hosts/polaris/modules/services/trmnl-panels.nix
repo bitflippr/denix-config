@@ -21,23 +21,57 @@
     fleet.hosts = [
       {
         name = "argo";
-        nodes = [{node = "builder"; os = "NixOS"; ssh = "argo"; kind = "linux";}];
+        nodes = [
+          {
+            node = "builder";
+            os = "NixOS";
+            ssh = "argo";
+            kind = "linux";
+          }
+        ];
       }
       {
         name = "Polaris";
-        nodes = [{node = "polaris"; os = "NixOS"; kind = "local"; disk = "/mnt";}];
+        nodes = [
+          {
+            node = "polaris";
+            os = "NixOS";
+            kind = "local";
+            disk = "/mnt";
+          }
+        ];
       }
       {
         name = "canis";
-        nodes = [{node = "canis"; os = "macOS"; ssh = "canis"; kind = "macos";}];
+        nodes = [
+          {
+            node = "canis";
+            os = "macOS";
+            ssh = "canis";
+            kind = "macos";
+          }
+        ];
       }
       {
         # One laptop, three installs; whichever is booted fills the tile
         name = "navis";
         nodes = [
-          {node = "desktop-1od2lvu"; os = "Windows"; ssh = "windows"; kind = "windows";}
-          {node = "navis"; os = "NixOS";}
-          {node = "vela"; os = "macOS"; ssh = "vela"; kind = "macos";}
+          {
+            node = "desktop-1od2lvu";
+            os = "Windows";
+            ssh = "windows";
+            kind = "windows";
+          }
+          {
+            node = "navis";
+            os = "NixOS";
+          }
+          {
+            node = "vela";
+            os = "macOS";
+            ssh = "vela";
+            kind = "macos";
+          }
         ];
       }
     ];

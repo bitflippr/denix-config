@@ -175,7 +175,6 @@ in
           };
 
           systemd = {
-            enable = true;
             emergencyAccess = true;
             tpm2.enable = true;
 

@@ -21,7 +21,21 @@
 
     caelestia-shell = {
       url = "github:dim-ghub/caelestia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+
+        # caelestia-cli e6b4900 ("merge upstream") puts ffmpeg in
+        # propagatedBuildInputs without taking it as a package argument, so the
+        # CLI no longer evaluates. Drop this pin once upstream adds the
+        # argument back.
+        caelestia-cli = {
+          url = "github:dim-ghub/caelestia-cli/a60b58fcde7e3f7dd303662f0280231bf36870eb";
+          inputs = {
+            nixpkgs.follows = "nixpkgs";
+            caelestia-shell.follows = "caelestia-shell";
+          };
+        };
+      };
     };
 
     catppuccin = {
@@ -100,11 +114,6 @@
     hyprland = {
       url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hyprutils = {
-        url = "github:hyprwm/hyprutils/v0.14.2";
-        inputs.nixpkgs.follows = "hyprland/nixpkgs";
-        inputs.systems.follows = "hyprland/systems";
-      };
     };
 
     impermanence = {

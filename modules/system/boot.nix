@@ -30,9 +30,24 @@ delib.module {
     enableIntelGraphics = myconfig.system.boot.enableIntelGraphics;
     enableIommu = myconfig.system.boot.enableIommu;
     disableFirmwareFramebuffer = myconfig.system.boot.disableFirmwareFramebuffer;
+
+    # v4l2loopback's kbuild `modules_install` leaves depmod's index files in
+    # $out/lib/modules/<release>, and those collide with the kernel's own
+    # copies when boot.extraModulePackages (from obs-studio's virtual camera)
+    # is merged into the module tree. aggregateModules reruns depmod over the
+    # merged tree, so the per-package indexes are only in the way.
+    kernelPackages = pkgs.linuxPackages_zen.extend (_: kprev: {
+      v4l2loopback = kprev.v4l2loopback.overrideAttrs (old: {
+        postInstall =
+          (old.postInstall or "")
+          + ''
+            rm -f "$out"/lib/modules/*/modules.*
+          '';
+      });
+    });
   in {
     boot = {
-      kernelPackages = lib.mkIf myconfig.host.isDesktop pkgs.linuxPackages_zen;
+      kernelPackages = lib.mkIf myconfig.host.isDesktop kernelPackages;
       tmp.useTmpfs = true;
 
       kernel.sysctl = lib.mkIf myconfig.host.isDesktop {

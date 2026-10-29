@@ -3,21 +3,12 @@
   pkgs,
   ...
 }: let
-  # nixos-unstable is still on 0.8.0. 0.8.2 has exact pixel mouse for
-  # kitty-graphics panes (terminal-browser clicks) and upstreamed launch_env.
-  herdr = pkgs.herdr.overrideAttrs (old: rec {
-    version = "0.8.2";
-    src = pkgs.fetchFromGitHub {
-      owner = "herdrdev";
-      repo = "herdr";
-      tag = "v${version}";
-      hash = "sha256-sEGIN3dLZasaHob3EHscWBCIQHflMQVchYmzgsETDk4=";
-    };
-    cargoHash = "sha256-4VThqPwYYEsGvaOKjBeL6XAC5bnNWB6oUMWP/uXc/UQ=";
-    cargoDeps = pkgs.rustPlatform.fetchCargoVendor {
-      inherit src;
-      hash = cargoHash;
-    };
+  # ui.new_workspace_command is not upstream. 0.9.x split the TUI into a
+  # server/client pair, so the patch registers the command as a keyless popup
+  # in the endpoint command manifest and has the client invoke it by label;
+  # that single interception covers the keybinding, sidebar, and mobile New
+  # Workspace actions alike.
+  herdr = pkgs.herdr.overrideAttrs (old: {
     patches = (old.patches or []) ++ [./herdr-workspace-picker.patch];
   });
 

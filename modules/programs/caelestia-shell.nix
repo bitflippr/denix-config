@@ -12,7 +12,7 @@ delib.module {
     enable = boolOption false;
   };
 
-  home.ifEnabled = {myconfig, ...}: let
+  home.ifEnabled = {...}: let
     inherit (pkgs.stdenv.hostPlatform) system;
 
     caelestiaChatgpt = pkgs.writeScriptBin "caelestia-chatgpt" ''
@@ -47,6 +47,16 @@ delib.module {
         (old.patchPhase or "")
         + ''
           ${pkgs.patch}/bin/patch -p1 < ${caelestiaCliStaticSchemePatch}
+        '';
+
+      # Upstream sets SETUPTOOLS_SCM_PRETEND_VERSION as a derivation argument,
+      # but buildPythonPackage now enables structuredAttrs, so it reaches the
+      # builder as a plain shell variable rather than an environment variable
+      # and hatch-vcs never sees it in the build backend subprocess.
+      preBuild =
+        (old.preBuild or "")
+        + ''
+          export SETUPTOOLS_SCM_PRETEND_VERSION
         '';
     });
 
@@ -360,8 +370,8 @@ delib.module {
           # Only expand the empty-workspace drag region when emptiness is
           # confirmed. Missing IPC data must not cover application controls.
           substituteInPlace modules/drawers/ContentWindow.qml \
-            --replace-fail 'monitor?.activeWorkspace?.lastIpcObject.windows > 0)' \
-                           'monitor?.activeWorkspace?.lastIpcObject.windows !== 0)'
+            --replace-fail 'monitor?.activeWorkspace?.toplevels.values.length > 0)' \
+                           'monitor?.activeWorkspace?.toplevels.values.length !== 0)'
 
           substituteInPlace modules/background/DesktopClock.qml \
             --replace-fail "readonly property color safePrimary: useLightSet ? Colours.palette.m3primaryContainer : Colours.palette.m3primary" "readonly property color safePrimary: Colours.palette.m3onSurface" \
@@ -754,91 +764,80 @@ delib.module {
           };
         };
 
-        launcher.actions =
-          [
-            {
-              name = "Calculator";
-              icon = "calculate";
-              description = "Do simple math equations (powered by Qalc)";
-              command = ["autocomplete" "calc"];
-              enabled = true;
-              dangerous = false;
-            }
-            {
-              name = "Clipboard";
-              icon = "content_paste";
-              description = "Browse clipboard history";
-              command = ["autocomplete" "clipboard"];
-              enabled = true;
-              dangerous = false;
-            }
-            {
-              name = "Emoji";
-              icon = "emoji_emotions";
-              description = "Pick an emoji to copy";
-              command = ["autocomplete" "emoji"];
-              enabled = true;
-              dangerous = false;
-            }
-            {
-              name = "Keybinds";
-              icon = "keyboard";
-              description = "View all keyboard shortcuts";
-              command = ["autocomplete" "keybinds"];
-              enabled = true;
-              dangerous = false;
-            }
-            {
-              name = "Shutdown";
-              icon = "power_settings_new";
-              description = "Shutdown the system";
-              command = ["systemctl" "poweroff"];
-              enabled = true;
-              dangerous = true;
-            }
-            {
-              name = "Reboot";
-              icon = "cached";
-              description = "Reboot the system";
-              command = ["systemctl" "reboot"];
-              enabled = true;
-              dangerous = true;
-            }
-            {
-              name = "Logout";
-              icon = "exit_to_app";
-              description = "Log out of the current session";
-              command = ["loginctl" "terminate-user" ""];
-              enabled = true;
-              dangerous = true;
-            }
-            {
-              name = "Lock";
-              icon = "lock";
-              description = "Lock the current session";
-              command = ["loginctl" "lock-session"];
-              enabled = true;
-              dangerous = false;
-            }
-            {
-              name = "Sleep";
-              icon = "bedtime";
-              description = "Suspend then hibernate";
-              command = ["systemctl" "suspend-then-hibernate"];
-              enabled = true;
-              dangerous = false;
-            }
-          ]
-          ++ lib.optionals (myconfig.navis.enable or false) [
-            {
-              name = "Switch to Windows";
-              icon = "desktop_windows";
-              description = "Close Linux apps and continue Windows on the RTX 3050";
-              command = ["/etc/navis-windows-switch/windows-switch-control" "windows"];
-              enabled = true;
-              dangerous = true;
-            }
-          ];
+        launcher.actions = [
+          {
+            name = "Calculator";
+            icon = "calculate";
+            description = "Do simple math equations (powered by Qalc)";
+            command = ["autocomplete" "calc"];
+            enabled = true;
+            dangerous = false;
+          }
+          {
+            name = "Clipboard";
+            icon = "content_paste";
+            description = "Browse clipboard history";
+            command = ["autocomplete" "clipboard"];
+            enabled = true;
+            dangerous = false;
+          }
+          {
+            name = "Emoji";
+            icon = "emoji_emotions";
+            description = "Pick an emoji to copy";
+            command = ["autocomplete" "emoji"];
+            enabled = true;
+            dangerous = false;
+          }
+          {
+            name = "Keybinds";
+            icon = "keyboard";
+            description = "View all keyboard shortcuts";
+            command = ["autocomplete" "keybinds"];
+            enabled = true;
+            dangerous = false;
+          }
+          {
+            name = "Shutdown";
+            icon = "power_settings_new";
+            description = "Shutdown the system";
+            command = ["systemctl" "poweroff"];
+            enabled = true;
+            dangerous = true;
+          }
+          {
+            name = "Reboot";
+            icon = "cached";
+            description = "Reboot the system";
+            command = ["systemctl" "reboot"];
+            enabled = true;
+            dangerous = true;
+          }
+          {
+            name = "Logout";
+            icon = "exit_to_app";
+            description = "Log out of the current session";
+            command = ["loginctl" "terminate-user" ""];
+            enabled = true;
+            dangerous = true;
+          }
+          {
+            name = "Lock";
+            icon = "lock";
+            description = "Lock the current session";
+            command = ["loginctl" "lock-session"];
+            enabled = true;
+            dangerous = false;
+          }
+          {
+            name = "Sleep";
+            icon = "bedtime";
+            description = "Suspend then hibernate";
+            command = ["systemctl" "suspend-then-hibernate"];
+            enabled = true;
+            dangerous = false;
+          }
+        ];
 
         services = {
           weatherLocation = "40.0,-74.2";

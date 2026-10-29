@@ -28,7 +28,6 @@ delib.module {
         "/var/lib/navis-diagnostics"
         "/var/lib/rasdaemon"
         "/var/lib/decky-loader"
-        "/var/lib/libvirt"
         "/var/lib/tailscale"
       ];
     };
