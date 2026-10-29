@@ -18,6 +18,12 @@ delib.module {
           "194.242.2.2"
           "2a07:e340::2"
         ];
+        # Blocky looks up its list hosts with this. resolv.conf points back at
+        # Blocky, which isn't answering yet while it loads them at startup.
+        bootstrapDns = [
+          {upstream = "194.242.2.2";}
+          {upstream = "2a07:e340::2";}
+        ];
       };
     };
 
