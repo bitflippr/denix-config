@@ -36,6 +36,10 @@ delib.module {
           tailnetName = "canis";
           port = 8444;
         };
+        navis = {
+          tailnetName = "navis";
+          port = 8443;
+        };
       });
   };
 

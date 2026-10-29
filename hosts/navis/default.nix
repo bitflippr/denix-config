@@ -16,6 +16,8 @@ delib.host {
       };
 
       environment.enable = true;
+      fleetApprovals.enable = true;
+      fleetSsh.enable = true;
       fonts.enable = true;
       hardware.enable = true;
       i18n.enable = true;

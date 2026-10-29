@@ -23,6 +23,8 @@ delib.module {
       canis = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICCjjPRNWczwWtChAMOGLYHKTRvmhw1pNvy29b36hifi fleet-canis";
       # The laptop's macOS install.
       vela = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJLJdiKCr/5zw4CRfii4c6qiNQ40dLIhJxdtYXXcSIFe fleet-vela";
+      # The laptop's NixOS install.
+      navis = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILXHezNopXrrVepuwOW9DUV5brv1bDmXftCwCgQl8DZ/ fleet-navis";
     });
 
     # argo's T3 release channel, deploying releases to Polaris and canis.
