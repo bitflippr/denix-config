@@ -7,6 +7,8 @@ delib.module {
   nixos.ifEnabled = {myconfig, ...}: {
     users.users.${myconfig.constants.username}.openssh.authorizedKeys.keys = myconfig.sshKeys.personal;
 
+    systemd.tmpfiles.rules = ["d /scratch/tmp 1777 root root 10d"];
+
     programs.fleet = {
       enable = true;
       # Other hosts' agents arrive as system.fleetSsh sets up.
@@ -31,7 +33,7 @@ delib.module {
 
         conventions = [
           "Mars uses this desktop while it's up. Don't close their windows, stop their apps or change the desktop session unless the task is about it."
-          "/ has about 20 GB free. Put builds, caches and job output in ~/scratch and rip them when done."
+          "/ has about 20 GB free and /scratch is on it, not a separate volume. Put builds, caches and other temporary work in /scratch/tmp (emptied after 10 days) and rip them when done."
           "This is NixOS: get tools with `nix shell nixpkgs#<pkg>`. navis's config is denix-config hosts/navis, checked out at ~/nix-config, which often has Mars's uncommitted work: leave it alone and build on top of it. Make shared changes in argo's checkout and push."
           "To switch navis, pull ~/nix-config (`git -C ~/nix-config pull --ff-only`) and run `fleet switch --reason WHY` in it, or `fleet switch --on navis --reason WHY` from argo: either builds as you and asks Mars to activate the build. Never run nixos-rebuild over SSH."
           "Use `fleet job run` for anything that may outlive a tool call. Remove files with `rip`, not rm."
@@ -40,7 +42,8 @@ delib.module {
         ];
 
         paths = {
-          scratch = "/home/marshall/scratch";
+          # Not under /home: tmpfiles refuses root-owned fleet dirs inside a user-owned one.
+          scratch = "/scratch";
           projects = "/home/marshall/Projects";
           config = "/home/marshall/nix-config";
         };
@@ -57,7 +60,7 @@ delib.module {
         };
 
         caches = {
-          "/home/marshall/scratch" = "agent scratch; rip what you made";
+          "/scratch/tmp" = "agent scratch, emptied after 10 days; rip what you made";
           "/nix/store" = "only through `nix-collect-garbage` as root, after asking Mars";
         };
 
