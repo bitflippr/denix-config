@@ -10,55 +10,21 @@ delib.module {
     services = {
       resolved.enable = false;
 
-      blocky = {
-        enable = true;
-        settings = {
-          ports.dns = 53;
-          customDNS = {
-            customTTL = "1h";
-            mapping = {
-              "voice.skulldogged.dev" = "192.168.1.82";
-            };
-          };
-          # Tailnet names come from Tailscale's resolver; the upstreams don't know them.
-          conditional.mapping."skate-altair.ts.net" = "100.100.100.100";
-          upstreams.groups.default = [
-            "194.242.2.2"
-            "2a07:e340::2"
-          ];
-          blocking = {
-            denylists = {
-              ads = [
-                "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-                "https://big.oisd.nl/"
-                ''
-                  saawsedge.com
-                ''
-              ];
-              tracking = [
-                "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling/hosts"
-                "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/tif.txt"
-              ];
-              malware = [
-                "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/malicious.txt"
-                "https://urlhaus.abuse.ch/downloads/hostfile/"
-              ];
-            };
-            clientGroupsBlock.default = ["ads" "tracking" "malware"];
-          };
-          caching = {
-            minTime = "5m";
-            maxTime = "30m";
-            prefetching = true;
-          };
-        };
+      # The shared lists live in modules/system/blocky.nix. Mullvad's resolvers
+      # only answer plain DNS inside its tunnel; vpn.nix routes them there.
+      blocky.settings = {
+        ports.dns = 53;
+        upstreams.groups.default = [
+          "194.242.2.2"
+          "2a07:e340::2"
+        ];
       };
     };
 
     systemd.services = {
+      # Blocky's address for the Incus guests (incus.nix).
       polaris-blocky-service-ip = {
         wantedBy = ["multi-user.target"];
-        before = ["tailscaled-set.service"];
         after = ["network.target"];
         serviceConfig = {
           Type = "oneshot";

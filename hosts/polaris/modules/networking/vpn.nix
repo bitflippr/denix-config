@@ -15,7 +15,10 @@ delib.module {
 
     services.tailscale = {
       enable = true;
-      extraSetFlags = ["--accept-dns=false" "--advertise-exit-node" "--advertise-routes=10.100.0.53/32"];
+      # No subnet routes. tailscale set leaves prefs it isn't given alone, so
+      # this has to say so to drop a route once advertised (10.100.0.53, now
+      # only for Incus guests).
+      extraSetFlags = ["--accept-dns=false" "--advertise-exit-node" "--advertise-routes="];
       openFirewall = true;
       useRoutingFeatures = "server";
     };

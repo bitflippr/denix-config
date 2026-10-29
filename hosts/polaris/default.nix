@@ -53,6 +53,7 @@ delib.host {
       programs.enable = true;
       security.enable = true;
       services.enable = true;
+      blocky.enable = true;
       stateversion.version = "23.11";
 
       boot = {

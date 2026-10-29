@@ -16,6 +16,7 @@ delib.host {
       programs.enable = true;
       security.enable = true;
       services.enable = true;
+      blocky.enable = true;
       stateversion.version = "26.11";
 
       users = {
