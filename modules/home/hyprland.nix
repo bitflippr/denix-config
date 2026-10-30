@@ -246,6 +246,12 @@ delib.module {
             match.namespace = "selection";
             no_anim = true;
           }
+          {
+            # vellum's threads popup is the only part of the shell with glass.
+            match.namespace = "vellum-popup";
+            blur = true;
+            ignore_alpha = 0.3;
+          }
         ];
 
         curve = [
@@ -379,13 +385,14 @@ delib.module {
             (mkBind "ALT + TAB" "Switch windows" (exec "${snappySwitcher}/bin/snappy-switcher next --mod alt"))
 
             (mkBind "${mod} + E" "Open file manager" (exec fileManager))
-            (mkBind "${mod} + R" "Open application launcher" (lua ''hl.dsp.global("caelestia:launcher")''))
+            (mkBind "${mod} + R" "Open application launcher" (exec "vellum-launch"))
             (mkBind "${mod} + W" "Open web browser" (exec browser))
             (mkBind "${mod} + RETURN" "Open terminal" (exec terminal))
 
-            (mkBind "${mod} + V" "Open clipboard history" (lua ''hl.dsp.global("caelestia:clipboard")''))
-            (mkBind "${mod} + period" "Open emoji picker" (lua ''hl.dsp.global("caelestia:emoji")''))
-            (mkBind "${mod} + slash" "Open keybind viewer" (lua ''hl.dsp.global("caelestia:keybinds")''))
+            (mkBind "${mod} + V" "Open clipboard history" (exec "vellum-clipboard"))
+            (mkBind "${mod} + period" "Open emoji picker" (exec "vellum-emoji"))
+            (mkBind "${mod} + slash" "Open keybind viewer" (exec "vellum-keys"))
+            (mkBind "${mod} + B" "Switch the shell between margin and hairline" (lua ''hl.dsp.global("vellum:toggle")''))
 
             (mkBind "${mod} + D" "Open Discord scratchpad" (exec "${scratchpad} equibop equibop discord"))
             (mkBind "${mod} + T" "Open Telegram scratchpad" (exec "${scratchpad} Telegram org.telegram.desktop telegram"))

@@ -19,6 +19,10 @@ delib.module {
       appimage = {
         enable = true;
         binfmt = true;
+        # Some AppImages (e.g. Beam Viewer) bundle libgcrypt without its libgpg-error dep.
+        package = pkgs.appimage-run.override {
+          extraPkgs = pkgs: [pkgs.libgpg-error];
+        };
       };
 
       hyprland = pkgs.lib.mkIf myconfig.host.isDesktop {

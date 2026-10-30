@@ -29,6 +29,10 @@ delib.module {
         "/var/lib/rasdaemon"
         "/var/lib/decky-loader"
         "/var/lib/tailscale"
+        # Android images, the container config and its data; the vendor image
+        # waydroid-nvidia-setup gated and its backup of the official one.
+        "/var/lib/waydroid"
+        "/var/lib/waydroid-nvidia"
       ];
     };
 

@@ -29,6 +29,7 @@ delib.host {
       services.enable = true;
       users.enable = true;
       users.extraGroups = ["tss"];
+      waydroidNvidia.enable = true;
     };
 
     home = {
@@ -54,7 +55,7 @@ delib.host {
       };
       mpd.enable = true;
       rmpc.enable = true;
-      caelestia-shell.enable = true;
+      vellum.enable = true;
 
       git = {
         enable = true;

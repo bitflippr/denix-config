@@ -57,6 +57,11 @@
       stalwart-cli = prev.callPackage ../../pkgs/stalwart-cli/package.nix {};
       trmnl-panels = prev.callPackage ../../pkgs/trmnl-panels/package.nix {};
       visor-bootmanager = prev.callPackage ../../pkgs/visor-bootmanager/package.nix {};
+      # The zen kernel has no legacy iptables backend; Waydroid's network
+      # script needs its nftables variant.
+      waydroid-nvidia = prev.callPackage ../../pkgs/waydroid-nvidia/package.nix {
+        waydroid = prev.waydroid-nftables;
+      };
     };
   };
 in
