@@ -426,7 +426,7 @@ delib.module {
             (mkBind "${modC} + K" "Shrink window height" (lua "hl.dsp.window.resize({ x = 0, y = -30, relative = true })"))
             (mkBindWith "${modC} + L" "Grow column width" (lua ''hl.dsp.layout("colresize +0.01")'') {repeating = true;})
 
-            (mkBind "XF86AudioRaiseVolume" "Raise volume" (exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"))
+            (mkBind "XF86AudioRaiseVolume" "Raise volume" (exec "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"))
             (mkBind "XF86AudioLowerVolume" "Lower volume" (exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"))
             (mkBind "XF86AudioMute" "Toggle audio mute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
 
