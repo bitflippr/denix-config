@@ -29,5 +29,13 @@ delib.module {
       after = ["tailscale-online.target"];
       wants = ["tailscale-online.target"];
     };
+
+    # argo doesn't accept Tailscale DNS, so only tailnet names go to MagicDNS;
+    # the fleet's approval endpoints are published under them. A delegate,
+    # unlike settings on tailscale0, isn't reset by tailscaled.
+    services.resolved.dnsDelegates.tailnet.Delegate = {
+      DNS = "100.100.100.100";
+      Domains = "~skate-altair.ts.net";
+    };
   };
 }
