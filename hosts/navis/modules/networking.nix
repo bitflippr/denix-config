@@ -11,11 +11,12 @@
   tunnelEdge =
     map (net: "-4 rule %s to ${net} table main priority 5200") ["198.41.192.0/24" "198.41.200.0/24"]
     ++ map (net: "-6 rule %s to ${net} table main priority 5200") ["2606:4700:a0::/48" "2606:4700:a8::/48"];
-  ipRules = action:
+  ipRules = action: suffix:
     lib.concatMapStrings (rule: ''
-      ${pkgs.iproute2}/bin/ip ${builtins.replaceStrings ["%s"] [action] rule} 2>/dev/null || true
+      ${pkgs.iproute2}/bin/ip ${builtins.replaceStrings ["%s"] [action] rule}${suffix}
     '')
     tunnelEdge;
+  delRules = ipRules "del" " 2>/dev/null || true";
 in
   delib.module {
     name = "navis";
@@ -28,7 +29,7 @@ in
         RemainAfterExit = true;
       };
       # A lookup in main with no route (offline) falls through to the next rule.
-      script = ipRules "del" + ipRules "add";
-      preStop = ipRules "del";
+      script = delRules + ipRules "add" "";
+      preStop = delRules;
     };
   }
