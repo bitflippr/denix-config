@@ -63,10 +63,11 @@ delib.host {
         signingKey = "263409D620072FB8";
       };
 
-      ranni-wallpaper = {
+      # "Rem Deadlock (New!!)", Wallpaper Engine Workshop item 3811045598, copied
+      # off /mnt/Shared so a Windows-locked NTFS volume can't blank the desktop.
+      video-wallpaper = {
         enable = true;
-        engineAssetsRoot = "/mnt/Shared/SteamLibrary/steamapps/common/wallpaper_engine/assets";
-        scenePackage = "/mnt/Shared/SteamLibrary/steamapps/workshop/content/431960/2847826034/scene.pkg";
+        video = "/home/marshall/.local/share/wallpapers/rem-deadlock.mp4";
       };
     };
   };

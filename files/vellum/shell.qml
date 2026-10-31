@@ -41,17 +41,17 @@ ShellRoot {
             Mode.togglePopup("threads");
         }
 
-        function today(): void {
-            Mode.togglePopup("today");
+        function notifications(): void {
+            Mode.togglePopup("notifications");
         }
     }
 
-    // Anything that lands in "today" while it is on screen has been seen.
+    // Notifications that arrive while the list is on screen have been seen.
     Connections {
-        target: Today
+        target: Notifs
         function onUnseenChanged() {
-            if (Mode.margin && Today.unseen > 0)
-                Today.markSeen();
+            if (Mode.margin && Notifs.unseen > 0)
+                Notifs.markSeen();
         }
     }
 
@@ -59,11 +59,11 @@ ShellRoot {
         target: Mode
         function onModeChanged() {
             if (Mode.margin)
-                Today.markSeen();
+                Notifs.markSeen();
         }
         function onPopupChanged() {
-            if (Mode.popup === "today")
-                Today.markSeen();
+            if (Mode.popup === "notifications")
+                Notifs.markSeen();
         }
     }
 }

@@ -3,21 +3,21 @@ import QtQuick.Layouts
 import qs.config
 import qs.services
 
-// Hairline's peach dot beside "today": something new. A new entry opens
-// into words for a few seconds, then settles back into the dot. Hovering
-// the today word opens it again.
+// Hairline's count of unseen notifications beside the word. A new one opens
+// into its words for a few seconds, then settles back into the count.
+// Hovering the word opens it again.
 Item {
     id: root
 
     property bool fresh: false
     property bool hovered: false
     readonly property bool expanded: fresh || hovered
-    readonly property var entry: Today.latest
+    readonly property var entry: Notifs.latest
 
-    visible: Today.unseen > 0 && entry !== null
+    visible: Notifs.unseen > 0 && entry !== null
     clip: true
     implicitHeight: 22
-    implicitWidth: expanded ? words.implicitWidth + 30 : 21
+    implicitWidth: expanded ? words.x + words.implicitWidth + 8 : count.implicitWidth + 2
 
     Behavior on implicitWidth {
         NumberAnimation {
@@ -29,19 +29,19 @@ Item {
 
     G {}
 
-    Rectangle {
-        x: 8
+    Label {
+        id: count
+        x: 0
         anchors.verticalCenter: parent.verticalCenter
-        width: 6
-        height: 6
-        radius: 3
+        text: Notifs.unseen
+        font.pixelSize: Theme.lineSize
         color: Theme.peach
     }
 
     Row {
         id: words
 
-        x: 22
+        x: count.implicitWidth + 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 8
         opacity: root.expanded ? 1 : 0
@@ -73,9 +73,9 @@ Item {
     }
 
     Connections {
-        target: Today
-        function onEntriesChanged() {
-            if (!Mode.margin && Today.entries.length > 0) {
+        target: Notifs
+        function onArrived() {
+            if (!Mode.margin) {
                 root.fresh = true;
                 settle.restart();
             }

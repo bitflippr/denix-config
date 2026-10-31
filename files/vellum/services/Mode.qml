@@ -17,7 +17,7 @@ Singleton {
     readonly property bool margin: mode === "margin"
     property bool ready: false
     property bool morphing: false
-    // Which of Hairline's popups is open: "", "threads" or "today".
+    // Which of Hairline's popups is open: "", "threads" or "notifications".
     property string popup: ""
 
     function togglePopup(name: string): void {

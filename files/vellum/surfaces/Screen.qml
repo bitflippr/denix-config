@@ -31,9 +31,9 @@ Scope {
         Morph.tick;
         return lineThreads.mapToItem(canvas, 0, 0).x;
     }
-    readonly property real todayX: {
+    readonly property real notifsX: {
         Morph.tick;
-        return lineToday.mapToItem(canvas, 0, 0).x;
+        return lineNotifs.mapToItem(canvas, 0, 0).x;
     }
 
     Binding {
@@ -52,7 +52,7 @@ Scope {
         line: ground
     }
 
-    TodayPopup {
+    NotifsPopup {
         screen: root.screen
         owner: root
         line: ground
@@ -205,9 +205,9 @@ Scope {
                         x: -3
                         y: -3
                         text: Time.clock
-                        font.pixelSize: 72
+                        font.pixelSize: Theme.clockSize
                         font.weight: Font.Light
-                        font.letterSpacing: -1.44
+                        font.letterSpacing: Theme.clockSize * -0.02
                     }
 
                     P {
@@ -261,26 +261,11 @@ Scope {
 
                         required property var modelData
                         property alias num: num
-                        property alias marker: marker
 
                         Layout.fillWidth: true
                         Layout.preferredHeight: 27
 
                         G {}
-
-                        Rectangle {
-                            id: marker
-                            x: -14
-                            y: 5
-                            width: 2
-                            height: 17
-                            radius: 1
-                            color: Theme.lavender
-                            opacity: 0
-                            visible: spaceRow.modelData.active
-
-                            G {}
-                        }
 
                         P {
                             id: num
@@ -320,56 +305,100 @@ Scope {
 
                 Repeater {
                     id: colThreads
-                    model: Threads.list
+                    model: Threads.rows
 
                     Item {
                         id: threadRow
 
                         required property var modelData
-                        property alias dot: dot
-                        // A task sits slightly in from the thread it belongs to.
-                        readonly property int indent: modelData.child ? 12 : 0
+                        // A task sits in from its thread, title and status alike.
+                        readonly property int indent: modelData.child ? 14 : 0
+                        readonly property bool folds: (modelData.tasks ?? 0) > 0
 
                         Layout.fillWidth: true
                         Layout.preferredHeight: 41
 
-                        G {}
-
                         Rectangle {
-                            id: dot
-                            x: threadRow.indent
-                            y: 5
-                            width: 6
-                            height: 6
-                            radius: 3
-                            color: Theme.kindColor(threadRow.modelData.kind)
-                            opacity: 0
-
-                            G {}
+                            visible: threadRow.modelData.child
+                            x: 3
+                            width: 1
+                            height: parent.height
+                            color: Theme.faintRule
                         }
 
                         Label {
-                            x: 24 + threadRow.indent
-                            width: parent.width - 24 - threadRow.indent
+                            x: threadRow.indent
+                            width: parent.width - threadRow.indent - (threadRow.folds ? toggle.width + 10 : 0)
                             elide: Text.ElideRight
                             text: threadRow.modelData.title
                             font.pixelSize: 13
                         }
 
-                        Label {
-                            x: 24
+                        Row {
+                            x: threadRow.indent
                             y: 18
-                            width: parent.width - 24
-                            elide: Text.ElideRight
-                            text: [threadRow.modelData.project, threadRow.modelData.label].filter(s => s).join(" · ")
-                            font.pixelSize: 12
-                            color: Theme.overlay1
+                            width: parent.width - threadRow.indent
+                            spacing: 0
+
+                            Label {
+                                id: status
+                                text: Time.stamp(threadRow.modelData.word, threadRow.modelData.at)
+                                font.pixelSize: 12
+                                color: Theme.kindColor(threadRow.modelData.kind)
+                            }
+
+                            Label {
+                                width: parent.width - status.width
+                                elide: Text.ElideRight
+                                text: threadRow.modelData.project ? ` · ${threadRow.modelData.project}` : ""
+                                font.pixelSize: 12
+                                color: Theme.overlay1
+                            }
                         }
 
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: Threads.open(threadRow.modelData.id, threadRow.modelData.environmentId)
+                        }
+
+                        // How many tasks the thread has, in the colour of the most
+                        // urgent; clicking opens them up underneath.
+                        Row {
+                            id: toggle
+                            visible: threadRow.folds
+                            anchors.right: parent.right
+                            spacing: 5
+
+                            Label {
+                                text: threadRow.modelData.tasks ?? ""
+                                font.pixelSize: 12
+                                color: Theme.kindColor(threadRow.modelData.tasksKind ?? "")
+                            }
+
+                            Label {
+                                text: "›"
+                                font.pixelSize: 13
+                                color: toggleArea.containsMouse ? Theme.text : Theme.overlay1
+                                rotation: threadRow.modelData.open ? 90 : 0
+
+                                Behavior on rotation {
+                                    NumberAnimation {
+                                        duration: 160
+                                        easing.type: Easing.OutCubic
+                                    }
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: toggleArea
+                            visible: threadRow.folds
+                            anchors.fill: toggle
+                            anchors.margins: -6
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Threads.toggleExpanded(threadRow.modelData)
                         }
                     }
                 }
@@ -459,61 +488,91 @@ Scope {
                     Layout.fillHeight: true
                 }
 
-                P {
-                    id: colTodayLabel
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: colNotifsLabel.height
                     Layout.bottomMargin: 12
-                    visible: Today.entries.length > 0
-                    text: "today"
-                    font.pixelSize: 12
-                    color: Theme.overlay1
+                    visible: Notifs.entries.length > 0
+
+                    G {}
+
+                    P {
+                        id: colNotifsLabel
+                        text: "notifications"
+                        font.pixelSize: 12
+                        color: Theme.overlay1
+                    }
+
+                    Label {
+                        anchors.right: parent.right
+                        text: Notifs.entries.length > 5 ? `${Notifs.entries.length - 5} more · clear` : "clear"
+                        font.pixelSize: 12
+                        color: clearArea.containsMouse ? Theme.text : Theme.overlay0
+
+                        MouseArea {
+                            id: clearArea
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Notifs.clear()
+                        }
+                    }
                 }
 
                 Repeater {
                     // Newest at the bottom; older entries rise and fade.
-                    model: Today.entries.slice(0, 6).reverse()
+                    model: Notifs.entries.slice(0, 5).reverse()
 
                     Item {
                         id: entry
 
                         required property var modelData
                         required property int index
-                        readonly property int age: Math.min(6, Today.entries.length) - 1 - index
+                        readonly property int age: Math.min(5, Notifs.entries.length) - 1 - index
 
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 37
+                        Layout.preferredHeight: detail.y + detail.height
                         Layout.topMargin: index === 0 ? 0 : 14
-                        opacity: [1, 0.78, 0.56, 0.38, 0.22, 0.14][age] ?? 0.14
+                        opacity: [1, 0.72, 0.5, 0.32, 0.2][age] ?? 0.2
 
+                        // Where it came from and when, then what it said, across
+                        // the whole column.
                         Label {
-                            width: 56
-                            text: Theme.time12(entry.modelData.time)
-                            font.pixelSize: 13
-                            color: Theme.yellow
-                            opacity: 0.85
-                        }
-
-                        Label {
-                            x: 68
-                            width: parent.width - 68
+                            width: parent.width - when.width - 10
                             elide: Text.ElideRight
                             text: entry.modelData.label
-                            font.pixelSize: 13
-                        }
-
-                        Label {
-                            x: 68
-                            y: 19
-                            width: parent.width - 68
-                            elide: Text.ElideRight
-                            text: entry.modelData.detail
-                            font.pixelSize: 13
+                            font.pixelSize: 12
                             color: Theme.overlay2
                         }
 
+                        Label {
+                            id: when
+                            anchors.right: parent.right
+                            text: Time.when(entry.modelData.time)
+                            font.pixelSize: 12
+                            color: Theme.yellow
+                            opacity: 0.8
+                        }
+
+                        Label {
+                            id: detail
+                            y: 18
+                            width: parent.width
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            lineHeight: 1.15
+                            text: entry.modelData.detail
+                            font.pixelSize: 13
+                        }
+
+                        // Click to act on it, right-click to put it away.
                         MouseArea {
                             anchors.fill: parent
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Today.activate(entry.modelData)
+                            onClicked: mouse => mouse.button === Qt.RightButton ? Notifs.dismiss(entry.modelData) : Notifs.activate(entry.modelData)
                         }
                     }
                 }
@@ -527,6 +586,65 @@ Scope {
 
                 Item {
                     Layout.topMargin: 12
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 19
+
+                    G {}
+
+                    P {
+                        id: colNetLabel
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "net"
+                        font.pixelSize: 12
+                        color: Theme.overlay1
+                    }
+
+                    P {
+                        id: colNet
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.min(implicitWidth, parent.width - 48)
+                        elide: Text.ElideRight
+                        text: Net.text
+                        font.pixelSize: 12
+                        color: Theme.subtext0
+                    }
+                }
+
+                Item {
+                    Layout.topMargin: 6
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 19
+                    visible: Bt.present
+
+                    G {}
+
+                    P {
+                        id: colBtLabel
+                        interactive: true
+                        onClicked: Bt.toggle()
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "bt"
+                        font.pixelSize: 12
+                        color: Theme.overlay1
+                    }
+
+                    P {
+                        id: colBt
+                        interactive: true
+                        onClicked: Bt.toggle()
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.min(implicitWidth, parent.width - 48)
+                        elide: Text.ElideRight
+                        text: Bt.text
+                        font.pixelSize: 12
+                        color: Theme.subtext0
+                    }
+                }
+
+                Item {
+                    Layout.topMargin: 6
                     Layout.fillWidth: true
                     Layout.preferredHeight: 19
 
@@ -585,15 +703,15 @@ Scope {
 
                 // Outside the row so they cannot feed back into the row's width.
                 MouseArea {
-                    id: todayArea
+                    id: notifsArea
                     z: 1
-                    x: lineToday.x
-                    width: lineToday.width
+                    x: lineNotifs.x
+                    width: lineNotifs.width
                     height: parent.height
-                    visible: lineToday.visible
+                    visible: lineNotifs.visible
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Mode.togglePopup("today")
+                    onClicked: Mode.togglePopup("notifications")
                 }
 
                 MouseArea {
@@ -632,23 +750,12 @@ Scope {
                                 id: lineNum
 
                                 required property var modelData
-                                property alias marker: lineMarker
 
                                 interactive: true
                                 onClicked: modelData.workspace.activate()
                                 text: modelData.id
                                 font.pixelSize: Theme.lineSize
                                 color: modelData.active ? Theme.lavender : Theme.subtext0
-
-                                Rectangle {
-                                    id: lineMarker
-                                    y: parent.height + 1
-                                    width: parent.width
-                                    height: 2
-                                    radius: 1
-                                    color: Theme.lavender
-                                    visible: lineNum.modelData.active
-                                }
                             }
                         }
                     }
@@ -669,27 +776,15 @@ Scope {
                             color: Theme.overlay1
                         }
 
-                        Row {
-                            spacing: 6
-                            anchors.verticalCenter: parent.verticalCenter
+                        Repeater {
+                            model: Threads.summary
 
-                            G {}
+                            Label {
+                                required property var modelData
 
-                            Repeater {
-                                id: lineDots
-                                model: Threads.list
-
-                                Rectangle {
-                                    required property var modelData
-
-                                    width: 7
-                                    height: 7
-                                    radius: 3.5
-                                    color: Theme.kindColor(modelData.kind)
-                                    opacity: 0
-
-                                    G {}
-                                }
+                                text: `${modelData.count} ${modelData.word}`
+                                font.pixelSize: Theme.lineSize
+                                color: Theme.kindColor(modelData.kind)
                             }
                         }
                     }
@@ -760,6 +855,54 @@ Scope {
 
                     Word {
                         P {
+                            id: lineNetLabel
+                            text: "net"
+                            font.pixelSize: Theme.lineSize
+                            color: Theme.overlay1
+                        }
+
+                        P {
+                            id: lineNet
+                            width: Math.min(implicitWidth, 220)
+                            elide: Text.ElideRight
+                            text: Net.text
+                            font.pixelSize: Theme.lineSize
+                            color: Theme.subtext0
+                        }
+                    }
+
+                    Seg {}
+
+                    Word {
+                        visible: Bt.present
+
+                        P {
+                            id: lineBtLabel
+                            interactive: true
+                            onClicked: Bt.toggle()
+                            text: "bt"
+                            font.pixelSize: Theme.lineSize
+                            color: Theme.overlay1
+                        }
+
+                        P {
+                            id: lineBt
+                            interactive: true
+                            onClicked: Bt.toggle()
+                            width: Math.min(implicitWidth, 220)
+                            elide: Text.ElideRight
+                            text: Bt.text
+                            font.pixelSize: Theme.lineSize
+                            color: Theme.subtext0
+                        }
+                    }
+
+                    Seg {
+                        visible: Bt.present
+                    }
+
+                    Word {
+                        P {
                             id: lineVolLabel
                         interactive: true
                         onClicked: Audio.toggleMute()
@@ -798,25 +941,25 @@ Scope {
                     }
 
                     Word {
-                        id: lineToday
+                        id: lineNotifs
 
-                        visible: Today.entries.length > 0
+                        visible: Notifs.entries.length > 0
 
                         P {
-                            id: lineTodayLabel
-                            text: "today"
+                            id: lineNotifsLabel
+                            text: "notifications"
                             font.pixelSize: Theme.lineSize
                             color: Theme.overlay1
                         }
 
                         EventMark {
                             anchors.verticalCenter: parent.verticalCenter
-                            hovered: todayArea.containsMouse
+                            hovered: notifsArea.containsMouse
                         }
                     }
 
                     Seg {
-                        visible: lineToday.visible
+                        visible: lineNotifs.visible
                     }
 
                     Word {
@@ -895,9 +1038,9 @@ Scope {
                 marginTarget: colClock
                 hairlineTarget: lineClock
                 text: Time.clock
-                font.pixelSize: 72
+                font.pixelSize: Theme.clockSize
                 font.weight: Font.Light
-                font.letterSpacing: -1.44
+                font.letterSpacing: Theme.clockSize * -0.02
             }
 
             Actor {
@@ -954,18 +1097,6 @@ Scope {
                 }
             }
 
-            BoxActor {
-                space: canvas
-                marginTarget: {
-                    Morph.tick;
-                    return colSpaces.itemAt(root.activeIndex)?.marker ?? null;
-                }
-                hairlineTarget: {
-                    Morph.tick;
-                    return lineSpaces.itemAt(root.activeIndex)?.marker ?? null;
-                }
-            }
-
             Actor {
                 space: canvas
                 marginTarget: colThreadsLabel
@@ -974,29 +1105,11 @@ Scope {
                 font.pixelSize: 12
             }
 
-            Repeater {
-                model: Threads.list
-
-                BoxActor {
-                    required property int index
-
-                    space: canvas
-                    marginTarget: {
-                        Morph.tick;
-                        return colThreads.itemAt(index)?.dot ?? null;
-                    }
-                    hairlineTarget: {
-                        Morph.tick;
-                        return lineDots.itemAt(index) ?? null;
-                    }
-                }
-            }
-
             Actor {
                 space: canvas
-                marginTarget: colTodayLabel
-                hairlineTarget: lineTodayLabel
-                text: "today"
+                marginTarget: colNotifsLabel
+                hairlineTarget: lineNotifsLabel
+                text: "notifications"
                 font.pixelSize: 12
             }
 
@@ -1018,6 +1131,44 @@ Scope {
                 elide: Text.ElideRight
                 text: Media.artist
                 font.pixelSize: 13
+            }
+
+            Actor {
+                space: canvas
+                marginTarget: colNetLabel
+                hairlineTarget: lineNetLabel
+                text: "net"
+                font.pixelSize: 12
+            }
+
+            Actor {
+                space: canvas
+                marginTarget: colNet
+                hairlineTarget: lineNet
+                width: Math.min(implicitWidth, Mode.margin ? Theme.columnWidth - 48 : 220 * 12 / Theme.lineSize)
+                elide: Text.ElideRight
+                text: Net.text
+                font.pixelSize: 12
+            }
+
+            Actor {
+                space: canvas
+                visible: Bt.present
+                marginTarget: colBtLabel
+                hairlineTarget: lineBtLabel
+                text: "bt"
+                font.pixelSize: 12
+            }
+
+            Actor {
+                space: canvas
+                visible: Bt.present
+                marginTarget: colBt
+                hairlineTarget: lineBt
+                width: Math.min(implicitWidth, Mode.margin ? Theme.columnWidth - 48 : 220 * 12 / Theme.lineSize)
+                elide: Text.ElideRight
+                text: Bt.text
+                font.pixelSize: 12
             }
 
             Actor {

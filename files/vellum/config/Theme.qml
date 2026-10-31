@@ -42,6 +42,11 @@ Singleton {
     readonly property int lineHeight: 26
     readonly property int lineSize: 14
 
+    // The Margin clock, as large as the widest time ("00:00 pm") allows in the
+    // column. Maple Mono is monospaced at 0.6em, so "00:00" at -0.02em spacing
+    // is 2.9em; it starts 3px left of the column, with 8px and "pm" (18px) after.
+    readonly property int clockSize: Math.floor((columnWidth + 3 - 8 - 18) / 2.9)
+
     function kindColor(kind: string): color {
         switch (kind) {
         case "wait":
@@ -55,9 +60,5 @@ Singleton {
         default:
             return lavender;
         }
-    }
-
-    function time12(date) {
-        return Qt.formatDateTime(date, "h:mm ap");
     }
 }

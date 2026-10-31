@@ -23,7 +23,6 @@ Singleton {
     property string environmentId: ""
     // True while the desktop app's published list is available.
     property bool published: false
-    property var publishedStatus: ({})
     readonly property string publishedPath: `${Quickshell.env("XDG_RUNTIME_DIR")}/t3code/threads.json`
     property string token: ""
     property var threadMap: ({})
@@ -37,7 +36,60 @@ Singleton {
     // is shown changes, since running threads update many times a minute.
     property var list: []
 
-    signal finished(string id, string environmentId, string title, string kind)
+    // Threads whose tasks are opened up, by `environmentId:id`. Folded by default.
+    property var expanded: ({})
+
+    // The list as shown: each thread with how many tasks it has and the most
+    // urgent state among them, and the tasks themselves only under an opened
+    // thread. Tasks follow their thread in `list`, deeper ones included.
+    readonly property var rows: {
+        const rank = {
+            wait: 4,
+            fail: 3,
+            run: 2,
+            done: 1,
+            idle: 0
+        };
+        const out = [];
+        let top = null;
+        for (const t of list) {
+            if (!t.child || top === null) {
+                top = Object.assign({}, t, {
+                    tasks: 0,
+                    tasksKind: "idle",
+                    open: !!expanded[`${t.environmentId}:${t.id}`]
+                });
+                out.push(top);
+                continue;
+            }
+            top.tasks++;
+            if ((rank[t.kind] ?? 0) > rank[top.tasksKind])
+                top.tasksKind = t.kind;
+            if (top.open)
+                out.push(t);
+        }
+        return out;
+    }
+
+    // Hairline's short form: how many threads are in each state, most urgent first.
+    readonly property var summary: {
+        const words = [["wait", "need you"], ["fail", "failed"], ["run", "running"], ["done", "done"]];
+        return words.map(([kind, word]) => ({
+                    kind,
+                    count: list.filter(t => t.kind === kind).length,
+                    word
+                })).filter(s => s.count > 0);
+    }
+
+    function toggleExpanded(row): void {
+        const key = `${row.environmentId}:${row.id}`;
+        const next = Object.assign({}, expanded);
+        if (next[key])
+            delete next[key];
+        else
+            next[key] = true;
+        expanded = next;
+    }
 
     function settled(t): bool {
         if (t.settledOverride === "settled")
@@ -60,16 +112,18 @@ Singleton {
         return "done";
     }
 
-    function label(t): string {
+    // The status word and when it happened, which the views stamp with
+    // `Time.stamp` so the day stays right as the clock moves on.
+    function label(t) {
         switch (kind(t)) {
         case "run":
-            return "running";
+            return ["running", null];
         case "wait":
-            return "needs you";
+            return ["needs you", null];
         case "fail":
-            return `failed ${Theme.time12(new Date(t.updatedAt))}`;
+            return ["failed", Date.parse(t.updatedAt)];
         default:
-            return t.latestRunCompletedAt ? `done ${Theme.time12(new Date(t.latestRunCompletedAt))}` : "idle";
+            return t.latestRunCompletedAt ? ["done", Date.parse(t.latestRunCompletedAt)] : ["idle", null];
         }
     }
 
@@ -170,10 +224,6 @@ Singleton {
         }
     }
 
-    function active(t): bool {
-        return t && ["run", "wait"].includes(kind(t));
-    }
-
     function apply(item): void {
         switch (item.kind) {
         case "snapshot":
@@ -197,15 +247,7 @@ Singleton {
             }
         case "thread.updated":
             {
-                const before = threadMap[item.thread.id];
-                const after = item.thread;
-                if (before && !(after.lineage?.parentThreadId ?? after.parentThreadId)) {
-                    if (active(before) && !active(after))
-                        finished(after.id, root.environmentId, after.title, kind(after));
-                    else if (kind(before) !== "wait" && kind(after) === "wait")
-                        finished(after.id, root.environmentId, after.title, "wait");
-                }
-                threadMap[after.id] = after;
+                threadMap[item.thread.id] = item.thread;
                 break;
             }
         case "thread.removed":
@@ -228,8 +270,9 @@ Singleton {
                     title: t.title,
                     project: projectName(t.projectId),
                     kind: kind(t),
-                    label: label(t),
-                    started: Theme.time12(new Date(t.latestRunStartedAt ?? t.createdAt)),
+                    word: label(t)[0],
+                    at: label(t)[1],
+                    started: Date.parse(t.latestRunStartedAt ?? t.createdAt),
                     environmentId: root.environmentId,
                     child: false
                 }));
@@ -265,9 +308,9 @@ Singleton {
         case "waiting":
             return "waiting";
         case "failed":
-            return t.completedAt ? `failed ${Theme.time12(new Date(t.completedAt))}` : "failed";
+            return "failed";
         default:
-            return t.completedAt ? `done ${Theme.time12(new Date(t.completedAt))}` : "ready";
+            return t.completedAt ? "done" : "ready";
         }
     }
 
@@ -278,27 +321,27 @@ Singleton {
         } catch (e) {
             return;
         }
-        const statuses = {};
+        // Only what is moving or still unread, the way T3 marks Done until a
+        // thread is opened. A task keeps its parent on the list for context.
+        const byKey = {};
+        for (const t of threads)
+            byKey[`${t.environmentId}:${t.id}`] = t;
+        const shown = new Set();
         for (const t of threads) {
-            const key = `${t.environmentId}:${t.id}`;
             const kind = statusKinds[t.status] ?? "done";
-            statuses[key] = kind;
-            const before = publishedStatus[key];
-            if (published && before !== undefined && before !== kind) {
-                if (["run", "wait"].includes(before) && !["run", "wait"].includes(kind))
-                    finished(t.id, t.environmentId, t.title, kind);
-                else if (kind === "wait" && before !== "wait")
-                    finished(t.id, t.environmentId, t.title, "wait");
-            }
+            if (!["run", "wait"].includes(kind) && t.unseen === false)
+                continue;
+            for (let at = t; at && !shown.has(`${at.environmentId}:${at.id}`); at = at.parent && byKey[`${at.parent.environmentId}:${at.parent.threadId}`])
+                shown.add(`${at.environmentId}:${at.id}`);
         }
-        publishedStatus = statuses;
-        const next = threads.map(t => ({
+        const next = threads.filter(t => shown.has(`${t.environmentId}:${t.id}`)).map(t => ({
                     id: t.id,
                     title: t.title,
                     project: [t.project, t.environmentId === root.environmentId ? "" : t.environment].filter(s => s).join(" · "),
                     kind: statusKinds[t.status] ?? "done",
-                    label: publishedLabel(t),
-                    started: Theme.time12(new Date(t.startedAt ?? t.createdAt)),
+                    word: publishedLabel(t),
+                    at: ["failed", "ready"].includes(t.status) && t.completedAt ? Date.parse(t.completedAt) : null,
+                    started: Date.parse(t.startedAt ?? t.createdAt),
                     environmentId: t.environmentId,
                     child: t.parent !== null
                 }));
@@ -322,7 +365,6 @@ Singleton {
                 return;
             // T3 quit and took its list with it: fall back to the local feed.
             root.published = false;
-            root.publishedStatus = {};
             root.list = [];
             root.reconnect();
         }

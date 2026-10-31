@@ -6,23 +6,23 @@ import qs.config
 import qs.services
 import qs.components
 
-// Hairline's "today", opened by clicking "today" on the line: the same
-// running list the Margin column shows, newest first.
+// Hairline's notifications, opened by clicking the word on the line: the
+// same list the Margin column shows, newest first.
 PanelWindow {
     id: popup
 
     required property var owner
     required property var line
 
-    visible: Mode.popup === "today" && !Mode.margin && Today.entries.length > 0
+    visible: Mode.popup === "notifications" && !Mode.margin && Notifs.entries.length > 0
     anchors {
         top: true
         left: true
     }
     margins {
         top: Theme.lineY + Theme.lineHeight + 6
-        // Keep it on screen: the today word sits near the right edge.
-        left: Math.max(8, Math.min(popup.owner.todayX - 16, popup.screen.width - implicitWidth - Theme.lineX))
+        // Keep it on screen: the notifications word sits near the right edge.
+        left: Math.max(8, Math.min(popup.owner.notifsX - 16, popup.screen.width - implicitWidth - Theme.lineX))
     }
     implicitWidth: 440
     implicitHeight: body.height
@@ -54,7 +54,7 @@ PanelWindow {
             width: parent.width
 
             Repeater {
-                model: Today.entries.slice(0, 12)
+                model: Notifs.entries.slice(0, 12)
 
                 Item {
                     id: row
@@ -69,7 +69,7 @@ PanelWindow {
                         x: 16
                         y: 10
                         width: 66
-                        text: Theme.time12(row.modelData.time)
+                        text: Time.when(row.modelData.time)
                         font.pixelSize: 13
                         color: Theme.yellow
                         opacity: 0.85
@@ -98,15 +98,20 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         width: parent.width
                         height: 1
-                        visible: row.index < Math.min(12, Today.entries.length) - 1
+                        visible: row.index < Math.min(12, Notifs.entries.length) - 1
                         color: Qt.rgba(0.804, 0.839, 0.957, 0.1)
                     }
 
                     MouseArea {
                         anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            Today.activate(row.modelData);
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.RightButton) {
+                                Notifs.dismiss(row.modelData);
+                                return;
+                            }
+                            Notifs.activate(row.modelData);
                             Mode.popup = "";
                         }
                     }
@@ -120,7 +125,7 @@ PanelWindow {
                 Label {
                     x: 16
                     y: 9
-                    text: Today.entries.length > 12 ? `${Today.entries.length - 12} more · clears at midnight` : "clears at midnight"
+                    text: Notifs.entries.length > 12 ? `${Notifs.entries.length - 12} more · right-click to dismiss` : "right-click to dismiss"
                     font.pixelSize: 11
                     color: Theme.overlay0
                 }
@@ -140,7 +145,7 @@ PanelWindow {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            Today.clear();
+                            Notifs.clear();
                             Mode.popup = "";
                         }
                     }

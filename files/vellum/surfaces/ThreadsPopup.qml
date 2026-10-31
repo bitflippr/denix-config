@@ -13,7 +13,7 @@ PanelWindow {
     required property var owner
     required property var line
 
-    visible: Mode.popup === "threads" && !Mode.margin && Threads.list.length > 0
+    visible: Mode.popup === "threads" && !Mode.margin && Threads.rows.length > 0
     anchors {
         top: true
         left: true
@@ -52,7 +52,7 @@ PanelWindow {
             width: parent.width
 
             Repeater {
-                model: Threads.list
+                model: Threads.rows
 
                 Item {
                     id: row
@@ -60,23 +60,23 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     readonly property int indent: modelData.child ? 14 : 0
+                    readonly property bool folds: (modelData.tasks ?? 0) > 0
 
                     width: rows.width
                     height: 54
 
                     Rectangle {
-                        x: 16 + row.indent
-                        y: 15
-                        width: 6
-                        height: 6
-                        radius: 3
-                        color: Theme.kindColor(row.modelData.kind)
+                        visible: row.modelData.child
+                        x: 19
+                        width: 1
+                        height: parent.height
+                        color: Theme.faintRule
                     }
 
                     Label {
-                        x: 34 + row.indent
+                        x: 16 + row.indent
                         y: 9
-                        width: parent.width - 34 - row.indent - status.width - 32
+                        width: parent.width - 16 - row.indent - status.width - 32
                         elide: Text.ElideRight
                         text: row.modelData.title
                         font.pixelSize: 13
@@ -87,15 +87,17 @@ PanelWindow {
                         anchors.right: parent.right
                         anchors.rightMargin: 16
                         y: 10
-                        text: row.modelData.label
+                        text: Time.stamp(row.modelData.word, row.modelData.at)
                         font.pixelSize: 12
-                        color: row.modelData.kind === "fail" ? Theme.red : row.modelData.kind === "wait" ? Theme.peach : Theme.overlay1
+                        color: Theme.kindColor(row.modelData.kind)
                     }
 
                     Label {
-                        x: 34 + row.indent
+                        x: 16 + row.indent
                         y: 29
-                        text: [row.modelData.project, `started ${row.modelData.started}`].filter(s => s).join(" · ")
+                        width: parent.width - 16 - row.indent - toggle.width - 32
+                        elide: Text.ElideRight
+                        text: [row.modelData.project, `started ${Time.when(row.modelData.started)}`].filter(s => s).join(" · ")
                         font.pixelSize: 12
                         color: Theme.overlay1
                     }
@@ -104,7 +106,7 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         width: parent.width
                         height: 1
-                        visible: row.index < Threads.list.length - 1
+                        visible: row.index < Threads.rows.length - 1
                         color: Qt.rgba(0.804, 0.839, 0.957, 0.1)
                     }
 
@@ -116,13 +118,45 @@ PanelWindow {
                             Mode.popup = "";
                         }
                     }
+
+                    Row {
+                        id: toggle
+                        visible: row.folds
+                        anchors.right: parent.right
+                        anchors.rightMargin: 16
+                        y: 29
+                        spacing: 5
+
+                        Label {
+                            text: `${row.modelData.tasks ?? 0} tasks`
+                            font.pixelSize: 12
+                            color: Theme.kindColor(row.modelData.tasksKind ?? "")
+                        }
+
+                        Label {
+                            text: "›"
+                            font.pixelSize: 13
+                            color: toggleArea.containsMouse ? Theme.text : Theme.overlay1
+                            rotation: row.modelData.open ? 90 : 0
+                        }
+                    }
+
+                    MouseArea {
+                        id: toggleArea
+                        visible: row.folds
+                        anchors.fill: toggle
+                        anchors.margins: -6
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: Threads.toggleExpanded(row.modelData)
+                    }
                 }
             }
 
             Label {
                 leftPadding: 16
                 topPadding: 9
-                text: "click a thread to open it in t3 code · settled threads stay hidden"
+                text: "click a thread to open it in t3 code"
                 font.pixelSize: 11
                 color: Theme.overlay0
             }
